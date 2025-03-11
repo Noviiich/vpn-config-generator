@@ -1,0 +1,14 @@
+# Общие
+bin/
+dist/
+*.env
+*.db
+*.conf
+.DS_Store
+
+# Go
+/vendor/
+*.test
+*.exe
+*.so
+*.dll
