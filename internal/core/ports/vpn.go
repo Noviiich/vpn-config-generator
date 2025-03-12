@@ -1,5 +1,5 @@
 package ports
 
 type VPNConfigProvider interface {
-	GenerateConfig(privateKey, publicKey, ip string) string
+	GenerateConfig(privateKey, publicKey, ip string) (string, error)
 }
