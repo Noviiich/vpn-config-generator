@@ -7,12 +7,13 @@ import (
 	"github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/events"
 	"github.com/Noviiich/vpn-config-generator/lib/e"
+	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
 type Processor struct {
-	tg     *telegram.Client
-	offset int
-	// storage storage.Storage
+	tg      *telegram.Client
+	offset  int
+	storage storage.Storage
 }
 
 type Meta struct {
@@ -25,10 +26,10 @@ var (
 	ErrUnknownMetaType  = errors.New("unknown meta type")
 )
 
-func New(client *telegram.Client /*, storage storage.Storage*/) *Processor {
+func New(client *telegram.Client, storage storage.Storage) *Processor {
 	return &Processor{
-		tg: client,
-		// storage: storage,
+		tg:      client,
+		storage: storage,
 	}
 }
 

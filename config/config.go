@@ -10,6 +10,7 @@ import (
 type Config struct {
 	ServerToken string
 	TgBotToken  string
+	MongoToken  string
 }
 
 func Load() *Config {
@@ -29,8 +30,15 @@ func Load() *Config {
 	if tgBotToken == "" {
 		log.Fatal("TG_BOT_TOKEN is not specified")
 	}
+
+	mongoToken := os.Getenv("MONGO_CONNECTION_STRING")
+
+	if mongoToken == "" {
+		log.Fatal("MONGO_CONNECTION_STRING is not specified")
+	}
 	return &Config{
 		ServerToken: serverToken,
-		TgBotToken: tgBotToken,
+		TgBotToken:  tgBotToken,
+		MongoToken:  mongoToken,
 	}
 }
