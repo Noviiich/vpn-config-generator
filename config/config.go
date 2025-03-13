@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	ServerToken string
+	TgBotToken  string
 }
 
 func Load() *Config {
@@ -22,5 +23,14 @@ func Load() *Config {
 	if serverToken == "" {
 		log.Fatal("VPN_SERVER_TOKEN is not specified")
 	}
-	return &Config{ServerToken: serverToken}
+
+	tgBotToken := os.Getenv("TG_BOT_TOKEN")
+
+	if tgBotToken == "" {
+		log.Fatal("TG_BOT_TOKEN is not specified")
+	}
+	return &Config{
+		ServerToken: serverToken,
+		TgBotToken: tgBotToken,
+	}
 }
