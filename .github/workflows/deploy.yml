@@ -39,5 +39,5 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
           export TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}
-          chmod +x /home/deploy/app/myapp
+          chmod +x /home/root/app/myapp
           systemctl restart myapp.service
