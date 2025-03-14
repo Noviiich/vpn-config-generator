@@ -38,6 +38,6 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          export TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}
+          export TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
           chmod +x /home/root/app/myapp
           systemctl restart myapp.service
