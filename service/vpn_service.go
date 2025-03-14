@@ -21,7 +21,7 @@ func (s *VPNService) Create(ctx context.Context, username string) (string, error
 	if err != nil {
 		return "", err
 	}
-	config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, username)
+	config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, "10.0.0.3")
 	if err != nil {
 		return "", err
 	}
