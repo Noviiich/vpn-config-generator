@@ -38,8 +38,6 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          sudo systemctl stop myapp || true
-          chmod +x /home/${{ secrets.SERVER_USER }}/app/myapp
           echo "TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}" | sudo tee -a /etc/environment
           sudo systemctl daemon-reload
-          sudo systemctl start myapp
+          ./myapp
