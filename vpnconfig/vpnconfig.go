@@ -1,5 +1,5 @@
 package vpnconfig
 
 type VPNConfig interface {
-	GenerateConfig(string, string, string) (string, error)
+	GenerateConfig(privateUserKey string, publicUserKey string, ipAddrUser string) (string, error)
 }

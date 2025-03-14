@@ -5,8 +5,10 @@ import (
 
 	tgClient "github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/config"
-	"github.com/Noviiich/vpn-config-generator/events/telegram"
 	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
+	"github.com/Noviiich/vpn-config-generator/events/telegram"
+	"github.com/Noviiich/vpn-config-generator/service"
+	"github.com/Noviiich/vpn-config-generator/vpnconfig/wireguard"
 )
 
 const (
@@ -36,9 +38,12 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// fmt.Printf("%s\n", bodyText)
+	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
+	vpnService := service.NewVPNService(vpnConfig)
 
 	eventsProcessor := telegram.New(
 		tgClient.New(tgBotHost, cfg.TgBotToken),
+		vpnService,
 	)
 
 	log.Print("service started")

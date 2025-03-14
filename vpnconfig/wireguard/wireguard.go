@@ -1,4 +1,4 @@
-package service
+package wireguard
 
 import (
 	"bytes"
@@ -90,24 +90,4 @@ AllowedIPs = %s/32`, userPublicKey, ipAddrUser)
 	}
 
 	return nil
-}
-
-func generateKey() (private string, public string, err error) {
-	privateKeyBytes, err := exec.Command("wg", "genkey").Output()
-	if err != nil {
-		return "", "", err
-	}
-	private = string(bytes.TrimSpace(privateKeyBytes))
-
-	cmd := exec.Command("wg", "pubkey")
-	stdin, _ := cmd.StdinPipe()
-	go func() {
-		defer stdin.Close()
-		stdin.Write([]byte(private))
-	}()
-
-	publicKeyBytes, err := cmd.Output()
-	public = string(publicKeyBytes[:len(publicKeyBytes)-1])
-
-	return
 }
