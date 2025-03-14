@@ -8,9 +8,9 @@ import (
 )
 
 type Config struct {
-	ServerToken string
-	TgBotToken  string
-	MongoToken  string
+	// ServerToken string
+	TgBotToken string
+	// MongoToken  string
 }
 
 func Load() *Config {
@@ -19,11 +19,11 @@ func Load() *Config {
 		log.Println("No .env file found, using system environment variables")
 	}
 
-	serverToken := os.Getenv("VPN_SERVER_TOKEN")
+	// serverToken := os.Getenv("VPN_SERVER_TOKEN")
 
-	if serverToken == "" {
-		log.Fatal("VPN_SERVER_TOKEN is not specified")
-	}
+	// if serverToken == "" {
+	// 	log.Fatal("VPN_SERVER_TOKEN is not specified")
+	// }
 
 	tgBotToken := os.Getenv("TG_BOT_TOKEN")
 
@@ -31,14 +31,14 @@ func Load() *Config {
 		log.Fatal("TG_BOT_TOKEN is not specified")
 	}
 
-	mongoToken := os.Getenv("MONGO_CONNECTION_STRING")
+	// mongoToken := os.Getenv("MONGO_CONNECTION_STRING")
 
-	if mongoToken == "" {
-		log.Fatal("MONGO_CONNECTION_STRING is not specified")
-	}
+	// if mongoToken == "" {
+	// 	log.Fatal("MONGO_CONNECTION_STRING is not specified")
+	// }
 	return &Config{
-		ServerToken: serverToken,
-		TgBotToken:  tgBotToken,
-		MongoToken:  mongoToken,
+		// ServerToken: serverToken,
+		TgBotToken: tgBotToken,
+		// MongoToken:  mongoToken,
 	}
 }
