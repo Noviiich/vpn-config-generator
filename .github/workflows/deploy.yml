@@ -1,58 +1,53 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: Deploy Service
+name: Build and Deploy
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [main]
   workflow_dispatch:
 
 jobs:
-
-  build:
+  build-deploy:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Set up Go
+    - name: Setup Go
       uses: actions/setup-go@v4
       with:
         go-version: '1.23.4'
-        
-    - name: Install Depency
-      run: go mod tidy
-      
-    - name: Build
-      run:  go build -o myapp .
 
-    - name: Deploy to server via SSH
-      uses: appleboy/ssh-action@v0.1.8
+    - name: Build binary
+      run: |
+        go mod tidy
+        go build -o myapp .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-binary
+        path: ./myapp
+
+  deploy:
+    needs: build-deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download binary
+      uses: actions/download-artifact@v3
+      with:
+        name: app-binary
+
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          # Перемещение в рабочую директорию
-          cd /home/${{ secrets.SERVER_USER }}/app
-
-          # Остановка старого процесса (если он есть)
           sudo systemctl stop myapp || true
-
-          # Обновление бинарника
-          rm -f myapp
-          mv ~/myapp myapp
-          chmod +x myapp
-
-          # Обновление переменных окружения
-          echo "TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}" | sudo tee /etc/environment
-
-          # Перезапуск сервиса
-          sudo systemctl daemon-reload
+          echo "TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}" | sudo tee -a /etc/environment
+          mv myapp /home/${{ secrets.SERVER_USER }}/app/
+          chmod +x /home/${{ secrets.SERVER_USER }}/app/myapp
           sudo systemctl start myapp
-          sudo systemctl enable myapp
-
-    
-
+        script_stop: true
+        envs: TELEGRAM_API_TOKEN
