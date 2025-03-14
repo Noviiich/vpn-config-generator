@@ -47,7 +47,6 @@ jobs:
 
           # Обновление переменных окружения
           echo "TELEGRAM_API_TOKEN=${{ secrets.TELEGRAM_API_TOKEN }}" | sudo tee /etc/environment
-          echo "SERVER_CONNECTION_TOKEN=${{ secrets.SERVER_CONNECTION_TOKEN }}" | sudo tee -a /etc/environment
 
           # Перезапуск сервиса
           sudo systemctl daemon-reload
