@@ -38,6 +38,7 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          export TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
-          chmod +x /home/root/app/myapp
-          systemctl restart myapp.service
+          echo "TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}" > /home/root/app/env.conf
+          sudo systemctl daemon-reload
+          sudo systemctl enable myapp 
+          sudo systemctl start myapp 
