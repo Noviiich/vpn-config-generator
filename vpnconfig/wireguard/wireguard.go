@@ -29,7 +29,7 @@ func NewWGManager(configPath string) *WGManager {
 	}
 	private := string(bytes.TrimSpace(privateServerByte))
 
-	IPAdressServerByte, err := exec.Command("ip", "-o", "route", "get", "to", "8.8.8.8").Output()
+	IPAdressServerByte, err := exec.Command("sh", "-c", "ip -o route get 8.8.8.8 | awk '/src/ {print $7}'").Output()
 	if err != nil {
 		log.Fatalf("can't get ip address server: %v", err)
 	}
@@ -69,7 +69,7 @@ func (wg *WGManager) changeBaseConfig(userPublicKey, ipAddrUser string) (err err
 	defer func() { err = e.WrapIfErr("can't change base config", err) }()
 	configEntry := fmt.Sprintf(`[Peer]
 PublicKey = %s
-AllowedIPs = %s/32`, userPublicKey, ipAddrUser)
+AllowedIPs = %s`, userPublicKey, ipAddrUser)
 
 	// Добавление в файл конфигурации
 	err = exec.Command("sudo", "sh", "-c", fmt.Sprintf("echo '%s' >> %s", configEntry, wg.configPath)).Run()
