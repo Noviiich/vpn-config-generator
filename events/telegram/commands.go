@@ -36,10 +36,12 @@ func (p *Processor) CreateConfig(ctx context.Context, chatID int, username strin
 
 	configText, err := p.service.Create(ctx, username, chatID)
 	if err != nil {
+		p.tg.SendMessage(ctx, chatID, err.Error())
 		return err
 	}
 
 	if err := p.tg.SendDocument(ctx, chatID, configText, "Wireguard.conf"); err != nil {
+		p.tg.SendMessage(ctx, chatID, err.Error())
 		return err
 	}
 
