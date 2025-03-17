@@ -34,7 +34,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 func (p *Processor) CreateConfig(ctx context.Context, chatID int, username string) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: can't create config", err) }()
 
-	configText, err := p.service.Create(ctx, username)
+	configText, err := p.service.Create(ctx, username, chatID)
 	if err != nil {
 		return err
 	}

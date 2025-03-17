@@ -5,12 +5,30 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/Noviiich/vpn-config-generator/storage"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Storage struct {
 	pool *pgxpool.Pool
 }
+
+// type User struct {
+// 	TelegramID         int
+// 	Username           string
+// 	Devices            []Device
+// 	SubscriptionActive bool
+// 	SubscriptionExpiry time.Time
+// }
+
+// type Device struct {
+// 	ID         string
+// 	UserID     int
+// 	PrivateKey string
+// 	PublicKey  string
+// 	IP         string
+// 	IsActive   bool
+// }
 
 func New(username string, password string, dbName string) *Storage {
 	dsn := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s", username, password, dbName)
@@ -50,7 +68,7 @@ func New(username string, password string, dbName string) *Storage {
 // 	return nil
 // }
 
-func (s *Storage) InitDB() error {
+func (s *Storage) InitDB() {
 	initCommand := `
 CREATE TABLE IF NOT EXISTS users (
 telegram_id BIGINT PRIMARY KEY,
@@ -70,8 +88,34 @@ CREATE TABLE IF NOT EXISTS devices (
 
 	_, err := s.pool.Exec(context.Background(), initCommand)
 	if err != nil {
-		return fmt.Errorf("can't init SQL: %w", err)
+		log.Fatalf("can't init postgeSQL: %v", err)
 	}
+}
 
-	return nil
+func (s *Storage) CreateUser(user storage.User) error {
+	_, err := s.pool.Exec(context.Background(),
+		`INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry) 
+		 VALUES ($1, $2, $3, $4) ON CONFLICT (telegram_id) DO NOTHING`,
+		user.TelegramID, user.Username, user.SubscriptionActive, user.SubscriptionExpiry)
+	return err
+}
+
+func (s *Storage) CreateDevice(device *storage.Device) error {
+	query := `INSERT INTO devices (user_id, private_key, public_key, ip, is_active) 
+	          VALUES ($1, $2, $3, $4, $5) RETURNING id`
+
+	err := s.pool.QueryRow(context.Background(), query,
+		device.UserID, device.PrivateKey, device.PublicKey, device.IP, device.IsActive).Scan(&device.ID)
+
+	return err
+}
+
+func (s *Storage) IsExistsUser(telegramID int) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE telegram_id = $1)`
+	err := s.pool.QueryRow(context.Background(), query, telegramID).Scan(&exists)
+	if err != nil {
+		return false, fmt.Errorf("can't check if user exists: %v", err)
+	}
+	return exists, nil
 }

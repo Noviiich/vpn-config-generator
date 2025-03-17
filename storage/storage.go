@@ -3,11 +3,14 @@ package storage
 import "time"
 
 type Storage interface {
-	InitDB() error
+	InitDB()
+	CreateDevice(device *Device) error
+	CreateUser(user User) error
+	IsExistsUser(telegramID int) (bool, error)
 }
 
 type User struct {
-	TelegramID         uint
+	TelegramID         int
 	Username           string
 	Devices            []Device
 	SubscriptionActive bool
@@ -16,7 +19,7 @@ type User struct {
 
 type Device struct {
 	ID         string
-	UserID     uint
+	UserID     int
 	PrivateKey string
 	PublicKey  string
 	IP         string

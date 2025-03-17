@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"os/exec"
+	"time"
 
 	"github.com/Noviiich/vpn-config-generator/storage"
 	"github.com/Noviiich/vpn-config-generator/vpnconfig"
@@ -21,11 +22,38 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 	}
 }
 
-func (s *VPNService) Create(ctx context.Context, username string) (string, error) {
+func (s *VPNService) Create(ctx context.Context, username string, chatID int) (string, error) {
 	publicUserKey, privateUserKey, err := generateKey()
 	if err != nil {
 		return "", err
 	}
+
+	exists, err := s.repo.IsExistsUser(chatID)
+	if err != nil {
+		return "", err
+	}
+
+	if exists {
+		if err := s.repo.CreateUser(storage.User{
+			TelegramID:         chatID,
+			Username:           username,
+			SubscriptionActive: true,
+			SubscriptionExpiry: time.Time{},
+		}); err != nil {
+			return "", err
+		}
+	}
+
+	if err := s.repo.CreateDevice(&storage.Device{
+		UserID:     chatID,
+		PrivateKey: privateUserKey,
+		PublicKey:  publicUserKey,
+		IP:         "10.0.0.3",
+		IsActive:   true,
+	}); err != nil {
+		return "", err
+	}
+
 	config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, "10.0.0.3")
 	if err != nil {
 		return "", err
