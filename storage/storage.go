@@ -1,12 +1,24 @@
 package storage
 
+import "time"
+
 type Storage interface {
-	Create(Config, string) (string, error)
+	Create(Device, string) (string, error)
 }
 
-type Config struct {
+type User struct {
+	TelegramID         uint
+	Username           string
+	Devices            []Device
+	SubscriptionActive bool
+	SubscriptionExpiry time.Time
+}
+
+type Device struct {
 	ID         string
+	UserID     uint
 	PrivateKey string
 	PublicKey  string
-	IPAddress  string
+	IP         string
+	IsActive   bool
 }
