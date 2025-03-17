@@ -3,7 +3,6 @@ package storage
 import "time"
 
 type Storage interface {
-	Create(Device, string) (string, error)
 }
 
 type User struct {
