@@ -91,9 +91,11 @@ func (c *Client) SendDocument(ctx context.Context, chatID int, text string, file
 	if _, err := io.Copy(part, strings.NewReader(text)); err != nil {
 		return err
 	}
-	defer func() { _ = writer.Close() }()
+	if err := writer.Close(); err != nil {
+		return err
+	}
 
-	_, err = c.doRequestDocument(ctx, sendDocumentMethod, body)
+	_, err = c.doRequestDocument(ctx, sendDocumentMethod, body, writer.FormDataContentType())
 	if err != nil {
 		return err
 	}
@@ -131,7 +133,7 @@ func (c *Client) doRequest(ctx context.Context, method string, query url.Values)
 	return body, nil
 }
 
-func (c *Client) doRequestDocument(ctx context.Context, method string, body io.Reader) (data []byte, err error) {
+func (c *Client) doRequestDocument(ctx context.Context, method string, body io.Reader, contentType string) (data []byte, err error) {
 	defer func() { err = e.WrapIfErr("can't do request", err) }()
 
 	u := url.URL{
@@ -144,6 +146,8 @@ func (c *Client) doRequestDocument(ctx context.Context, method string, body io.R
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("Content-Type", contentType)
 
 	resp, err := c.client.Do(req)
 	if err != nil {
