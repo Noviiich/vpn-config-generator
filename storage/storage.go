@@ -3,6 +3,7 @@ package storage
 import "time"
 
 type Storage interface {
+	InitDB() error
 }
 
 type User struct {

@@ -5,15 +5,20 @@ import (
 	"context"
 	"os/exec"
 
+	"github.com/Noviiich/vpn-config-generator/storage"
 	"github.com/Noviiich/vpn-config-generator/vpnconfig"
 )
 
 type VPNService struct {
 	conf vpnconfig.VPNConfig
+	repo storage.Storage
 }
 
-func NewVPNService(conf vpnconfig.VPNConfig) *VPNService {
-	return &VPNService{conf: conf}
+func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
+	return &VPNService{
+		conf: conf,
+		repo: repo,
+	}
 }
 
 func (s *VPNService) Create(ctx context.Context, username string) (string, error) {

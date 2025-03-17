@@ -8,6 +8,7 @@ import (
 	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
 	"github.com/Noviiich/vpn-config-generator/events/telegram"
 	"github.com/Noviiich/vpn-config-generator/service"
+	"github.com/Noviiich/vpn-config-generator/storage/postgres"
 	"github.com/Noviiich/vpn-config-generator/vpnconfig/wireguard"
 )
 
@@ -38,8 +39,10 @@ func main() {
 	// 	log.Fatal(err)
 	// }
 	// fmt.Printf("%s\n", bodyText)
+	repo := postgres.New("novich", "novich", "vpndb")
+	repo.InitDB()
 	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
-	vpnService := service.NewVPNService(vpnConfig)
+	vpnService := service.NewVPNService(vpnConfig, repo)
 
 	eventsProcessor := telegram.New(
 		tgClient.New(tgBotHost, cfg.TgBotToken),
