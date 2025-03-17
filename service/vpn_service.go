@@ -33,7 +33,7 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (s
 		return "", err
 	}
 
-	if exists {
+	if !exists {
 		if err := s.repo.CreateUser(storage.User{
 			TelegramID:         chatID,
 			Username:           username,
