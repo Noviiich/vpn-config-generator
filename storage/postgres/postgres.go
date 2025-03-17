@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,4 +21,18 @@ func New(username string, password string, dbName string) *Storage {
 	}
 
 	return &Storage{pool: pool}
+}
+
+func (s *Storage) InitDB(schemaFile string) error {
+	sqlBytes, err := os.ReadFile(schemaFile)
+	if err != nil {
+		return fmt.Errorf("can't read SQL-file: %w", err)
+	}
+
+	_, err = s.pool.Exec(context.Background(), string(sqlBytes))
+	if err != nil {
+		return fmt.Errorf("can't run SQL: %w", err)
+	}
+
+	return nil
 }
