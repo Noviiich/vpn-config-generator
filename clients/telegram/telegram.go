@@ -22,8 +22,9 @@ type Client struct {
 }
 
 const (
-	getUpdatesMethod  = "getUpdates"
-	sendMessageMethod = "sendMessage"
+	getUpdatesMethod   = "getUpdates"
+	sendMessageMethod  = "sendMessage"
+	sendDocumentMethod = "sendDocument"
 )
 
 func New(host string, token string) *Client {
@@ -92,6 +93,11 @@ func (c *Client) SendDocument(ctx context.Context, chatID int, text string, file
 	}
 	defer func() { _ = writer.Close() }()
 
+	_, err = c.doRequestDocument(ctx, sendDocumentMethod, body)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -123,4 +129,32 @@ func (c *Client) doRequest(ctx context.Context, method string, query url.Values)
 	}
 
 	return body, nil
+}
+
+func (c *Client) doRequestDocument(ctx context.Context, method string, body io.Reader) (data []byte, err error) {
+	defer func() { err = e.WrapIfErr("can't do request", err) }()
+
+	u := url.URL{
+		Scheme: "https",
+		Host:   c.host,
+		Path:   path.Join(c.basePath, method),
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	res, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
