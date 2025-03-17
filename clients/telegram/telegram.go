@@ -1,13 +1,16 @@
 package telegram
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/url"
 	"path"
 	"strconv"
+	"strings"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 )
@@ -65,6 +68,29 @@ func (c *Client) SendMessage(ctx context.Context, chatID int, text string) error
 	if err != nil {
 		return e.Wrap("can't send message", err)
 	}
+
+	return nil
+}
+
+func (c *Client) SendDocument(ctx context.Context, chatID int, text string, fileName string) (err error) {
+	defer func() { err = e.WrapIfErr("can't send document: %v", err) }()
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Добавляю поле chat_id
+	if err := writer.WriteField("chat_id", strconv.Itoa(chatID)); err != nil {
+		return err
+	}
+
+	part, err := writer.CreateFormFile("document", fileName)
+	if err != nil {
+		return err
+	}
+
+	if _, err := io.Copy(part, strings.NewReader(text)); err != nil {
+		return err
+	}
+	defer func() { _ = writer.Close() }()
 
 	return nil
 }

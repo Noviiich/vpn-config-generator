@@ -9,9 +9,9 @@ import (
 )
 
 const (
-	HelpCmd    = "/help"
-	StartCmd   = "/start"
-	OpenVpnCmd = "/openvpn"
+	HelpCmd  = "/help"
+	StartCmd = "/start"
+	WGVpnCmd = "/wireguard"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -20,7 +20,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	log.Printf("got new command '%s' from '%s", text, username)
 
 	switch text {
-	case OpenVpnCmd:
+	case WGVpnCmd:
 		return p.CreateConfig(ctx, chatID, username)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
@@ -34,12 +34,12 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 func (p *Processor) CreateConfig(ctx context.Context, chatID int, username string) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: can't create config", err) }()
 
-	config, err := p.service.Create(ctx, username)
+	configText, err := p.service.Create(ctx, username)
 	if err != nil {
 		return err
 	}
 
-	if err := p.tg.SendMessage(ctx, chatID, config); err != nil {
+	if err := p.tg.SendDocument(ctx, chatID, configText, "Wireguard.conf"); err != nil {
 		return err
 	}
 
