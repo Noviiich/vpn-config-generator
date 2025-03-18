@@ -3,9 +3,13 @@ package service
 import (
 	"bytes"
 	"context"
+	"fmt"
+	"net"
 	"os/exec"
+	"strconv"
 	"time"
 
+	"github.com/Noviiich/vpn-config-generator/lib/e"
 	"github.com/Noviiich/vpn-config-generator/storage"
 	"github.com/Noviiich/vpn-config-generator/vpnconfig"
 )
@@ -22,12 +26,17 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 	}
 }
 
-func (s *VPNService) Create(ctx context.Context, username string, chatID int) (string, error) {
+func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
+	defer func() { err = e.WrapIfErr("can't create text config: %v", err) }()
 	publicUserKey, privateUserKey, err := generateKey()
 	if err != nil {
 		return "", err
 	}
 
+	ip, err := s.getNextIP(ctx)
+	if err != nil {
+		return "", nil
+	}
 	exists, err := s.repo.IsExistsUser(chatID)
 	if err != nil {
 		return "", err
@@ -48,7 +57,7 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (s
 		UserID:     chatID,
 		PrivateKey: privateUserKey,
 		PublicKey:  publicUserKey,
-		IP:         "10.0.0.3",
+		IP:         ip,
 		IsActive:   true,
 	}); err != nil {
 		return "", err
@@ -60,6 +69,42 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (s
 	}
 
 	return config, nil
+}
+
+func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
+	defer func() { err = e.WrapIfErr("can't get next ip: %v", err) }()
+	lastIP, err := s.repo.GetIP(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	ipFormat := net.ParseIP(lastIP)
+	if ipFormat == nil {
+		return "", err
+	}
+
+	ipParts := ipFormat.To4()
+	if ipParts == nil {
+		return "", err
+	}
+
+	lastOctet, _ := strconv.Atoi(fmt.Sprintf("%d", ipParts[3]))
+	if lastOctet >= 254 { // Максимум x.x.x.254
+		return "", err
+	}
+
+	newIP := fmt.Sprintf("%d.%d.%d.%d",
+		ipParts[0],
+		ipParts[1],
+		ipParts[2],
+		lastOctet+1,
+	)
+
+	if err = s.repo.UpdateIP(ctx, newIP); err != nil {
+		return "", err
+	}
+
+	return newIP, nil
 }
 
 func generateKey() (private string, public string, err error) {
