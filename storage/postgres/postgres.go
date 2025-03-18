@@ -2,6 +2,8 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -84,6 +86,11 @@ CREATE TABLE IF NOT EXISTS devices (
     public_key TEXT NOT NULL,
     ip TEXT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS ip_pool (
+	id SERIAL PRIMARY KEY
+	last_ip TEXT NOT NULL
 );`
 
 	_, err := s.pool.Exec(context.Background(), initCommand)
@@ -118,4 +125,31 @@ func (s *Storage) IsExistsUser(telegramID int) (bool, error) {
 		return false, fmt.Errorf("can't check if user exists: %v", err)
 	}
 	return exists, nil
+}
+
+func (s *Storage) GetIP(ctx context.Context) (string, error) {
+	var lastIP string
+	err := s.pool.QueryRow(ctx, `
+        SELECT last_ip 
+        FROM ip_pool 
+        ORDER BY id DESC 
+        LIMIT 1
+    `).Scan(&lastIP)
+
+	if err != nil {
+		// Если таблица пустая — возвращаем дефолтный IP
+		if errors.Is(err, sql.ErrNoRows) {
+			return "10.0.0.2", nil
+		}
+		return "", err
+	}
+
+	return lastIP, nil
+}
+
+func (s *Storage) UpdateIP(ctx context.Context, newIP string) error {
+	_, err := s.pool.Exec(ctx, `
+        INSERT INTO ip_pool (last_ip) 
+        VALUES ($1)`, newIP)
+	return err
 }
