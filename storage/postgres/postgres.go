@@ -139,7 +139,7 @@ func (s *Storage) GetIP(ctx context.Context) (string, error) {
 	if err != nil {
 		// Если таблица пустая — возвращаем дефолтный IP
 		if errors.Is(err, sql.ErrNoRows) {
-			return "10.0.0.2", nil
+			return "10.0.0.1", nil
 		}
 		return "", err
 	}

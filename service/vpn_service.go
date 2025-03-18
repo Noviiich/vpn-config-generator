@@ -35,7 +35,7 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c
 
 	ip, err := s.getNextIP(ctx)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	exists, err := s.repo.IsExistsUser(chatID)
 	if err != nil {
@@ -63,7 +63,7 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c
 		return "", err
 	}
 
-	config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, "10.0.0.3")
+	config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, ip)
 	if err != nil {
 		return "", err
 	}
