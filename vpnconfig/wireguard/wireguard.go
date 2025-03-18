@@ -61,7 +61,8 @@ DNS = 8.8.8.8
 [Peer]
 PublicKey = %s
 Endpoint = %s:51820
-AllowedIPs = 0.0.0.0/0`, privateUserKey, ipAddrUser, wg.PublicServerKey, wg.IPAddrServer)
+AllowedIPs = 0.0.0.0/0
+PersistentKeepalive = 20`, privateUserKey, ipAddrUser, wg.PublicServerKey, wg.IPAddrServer)
 	return config
 }
 
