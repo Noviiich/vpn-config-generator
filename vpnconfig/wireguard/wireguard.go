@@ -55,7 +55,7 @@ func (wg *WGManager) GenerateConfig(privateUserKey string, publicUserKey string,
 func (wg *WGManager) createUserConfig(privateUserKey string, ipAddrUser string) string {
 	config := fmt.Sprintf(`[Interface]
 PrivateKey = %s
-Address = %s/24
+Address = %s/32
 DNS = 8.8.8.8
 
 [Peer]
@@ -70,7 +70,7 @@ func (wg *WGManager) changeBaseConfig(userPublicKey, ipAddrUser string) (err err
 	defer func() { err = e.WrapIfErr("can't change base config", err) }()
 	configEntry := fmt.Sprintf(`[Peer]
 PublicKey = %s
-AllowedIPs = %s`, userPublicKey, ipAddrUser)
+AllowedIPs = %s\n`, userPublicKey, ipAddrUser)
 
 	// Добавление в файл конфигурации
 	err = exec.Command("sudo", "sh", "-c", fmt.Sprintf("echo '%s' >> %s", configEntry, wg.configPath)).Run()
@@ -79,13 +79,7 @@ AllowedIPs = %s`, userPublicKey, ipAddrUser)
 	}
 
 	// Перезагрузка WireGuard
-	err = exec.Command("sudo", "wg-quick", "down", "wg0").Run()
-	if err != nil {
-		return err
-	}
-
-	// Запуск WireGuard
-	err = exec.Command("sudo", "wg-quick", "up", "wg0").Run()
+	err = exec.Command("systemctl", "restart", "wg-quick@wg0").Run()
 	if err != nil {
 		return err
 	}
