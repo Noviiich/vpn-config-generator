@@ -15,23 +15,6 @@ type Storage struct {
 	pool *pgxpool.Pool
 }
 
-// type User struct {
-// 	TelegramID         int
-// 	Username           string
-// 	Devices            []Device
-// 	SubscriptionActive bool
-// 	SubscriptionExpiry time.Time
-// }
-
-// type Device struct {
-// 	ID         string
-// 	UserID     int
-// 	PrivateKey string
-// 	PublicKey  string
-// 	IP         string
-// 	IsActive   bool
-// }
-
 func New(username string, password string, dbName string) *Storage {
 	dsn := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s", username, password, dbName)
 	pool, err := pgxpool.New(context.Background(), dsn)
@@ -41,34 +24,6 @@ func New(username string, password string, dbName string) *Storage {
 
 	return &Storage{pool: pool}
 }
-
-// func (s *Storage) InitDB(schemaFile string) error {
-// 	sqlBytes, err := os.ReadFile(schemaFile)
-// 	if err != nil {
-// 		return fmt.Errorf("can't read SQL-file: %w", err)
-// 	}
-
-// 	_, err = s.pool.Exec(context.Background(), string(sqlBytes))
-// 	if err != nil {
-// 		return fmt.Errorf("can't run SQL: %w", err)
-// 	}
-
-// 	return nil
-// }
-
-// func (s *Storage) initDB(schemaFile string) error {
-// 	sqlBytes, err := os.ReadFile(schemaFile)
-// 	if err != nil {
-// 		return fmt.Errorf("can't read SQL-file: %w", err)
-// 	}
-
-// 	_, err = s.pool.Exec(context.Background(), string(sqlBytes))
-// 	if err != nil {
-// 		return fmt.Errorf("can't run SQL: %w", err)
-// 	}
-
-// 	return nil
-// }
 
 func (s *Storage) InitDB() {
 	initCommand := `
@@ -139,7 +94,7 @@ func (s *Storage) GetIP(ctx context.Context) (string, error) {
 	if err != nil {
 		// Если таблица пустая — возвращаем дефолтный IP
 		if errors.Is(err, sql.ErrNoRows) {
-			return "10.0.0.6", nil
+			return "10.0.0.1", nil
 		}
 		return "", err
 	}
