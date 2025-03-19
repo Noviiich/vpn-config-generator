@@ -29,7 +29,7 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 
 func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
 	defer func() { err = e.WrapIfErr("can't create text config: %v", err) }()
-	publicUserKey, privateUserKey, err := generateKey()
+	privateUserKey, publicUserKey, err := generateKey()
 	if err != nil {
 		return "", err
 	}
