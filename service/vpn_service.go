@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"os/exec"
 	"strconv"
@@ -37,7 +38,7 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c
 	// if err != nil {
 	// 	return "", err
 	// }
-	ip := "10.0.0.4"
+	ip := "10.0.0.6"
 	exists, err := s.repo.IsExistsUser(chatID)
 	if err != nil {
 		return "", err
@@ -109,21 +110,23 @@ func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
 }
 
 func generateKey() (private string, public string, err error) {
-	privateKeyBytes, err := exec.Command("wg", "genkey").Output()
-	if err != nil {
+	defer func() { err = e.WrapIfErr("can't generate keys: %v", err) }()
+	cmd := exec.Command("sh", "-c", "wg genkey | tee /etc/wireguard/user1_privatekey | wg pubkey | tee /etc/wireguard/user1_publickey")
+	if err := cmd.Run(); err != nil {
 		return "", "", err
 	}
-	private = string(bytes.TrimSpace(privateKeyBytes))
 
-	cmd := exec.Command("wg", "pubkey")
-	stdin, _ := cmd.StdinPipe()
-	go func() {
-		defer stdin.Close()
-		stdin.Write([]byte(private))
-	}()
+	publicUserByte, err := exec.Command("cat", "/etc/wireguard/user1_publickey").Output()
+	if err != nil {
+		log.Fatalf("can't get public user key: %v", err)
+	}
+	pub := string(bytes.TrimSpace(publicUserByte))
 
-	publicKeyBytes, err := cmd.Output()
-	public = string(publicKeyBytes[:len(publicKeyBytes)-1])
+	privateUserByte, err := exec.Command("cat", "/etc/wireguard/user1_privatekey").Output()
+	if err != nil {
+		log.Fatalf("can't get private user key: %v", err)
+	}
+	pr := string(bytes.TrimSpace(privateUserByte))
 
-	return
+	return pr, pub, nil
 }
