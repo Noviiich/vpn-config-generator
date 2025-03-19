@@ -34,11 +34,10 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c
 		return "", err
 	}
 
-	// ip, err := s.getNextIP(ctx)
-	// if err != nil {
-	// 	return "", err
-	// }
-	ip := "10.0.0.6"
+	ip, err := s.getNextIP(ctx)
+	if err != nil {
+		return "", err
+	}
 	exists, err := s.repo.IsExistsUser(chatID)
 	if err != nil {
 		return "", err
