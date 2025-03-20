@@ -69,9 +69,19 @@ func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c
 			return "", err
 		}
 		return config, nil
+	} 
+
+	device, err := s.repo.GetDevice(chatID)
+	if err != nil {
+		return "", err
 	}
 
-	return "", nil
+	config, err := s.conf.GetConfig(device.PrivateKey, device.IP)
+	if err != nil {
+		return "", err
+	}
+
+	return config, nil
 }
 
 func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
