@@ -54,13 +54,13 @@ CREATE TABLE IF NOT EXISTS ip_pool (
 	}
 }
 
-func (s *Storage) GetDevice(telegramID int) (storage.Device, error) {
+func (s *Storage) GetDevice(ctx context.Context, telegramID int) (storage.Device, error) {
 	query := `SELECT id, user_id, private_key, public_key, ip, is_active 
               FROM devices 
               WHERE user_id = $1`
 
 	var device storage.Device
-	err := s.pool.QueryRow(context.Background(), query, telegramID).Scan(
+	err := s.pool.QueryRow(ctx, query, telegramID).Scan(
 		&device.ID,
 		&device.UserID,
 		&device.PrivateKey,
@@ -76,7 +76,7 @@ func (s *Storage) GetDevice(telegramID int) (storage.Device, error) {
 	return device, nil
 }
 
-func (s *Storage) CreateUser(user storage.User) error {
+func (s *Storage) CreateUser(ctx context.Context, user storage.User) error {
 	_, err := s.pool.Exec(context.Background(),
 		`INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry) 
 		 VALUES ($1, $2, $3, $4) ON CONFLICT (telegram_id) DO NOTHING`,
@@ -84,20 +84,20 @@ func (s *Storage) CreateUser(user storage.User) error {
 	return err
 }
 
-func (s *Storage) CreateDevice(device *storage.Device) error {
+func (s *Storage) CreateDevice(ctx context.Context, device *storage.Device) error {
 	query := `INSERT INTO devices (user_id, private_key, public_key, ip, is_active) 
 	          VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
-	err := s.pool.QueryRow(context.Background(), query,
+	err := s.pool.QueryRow(ctx, query,
 		device.UserID, device.PrivateKey, device.PublicKey, device.IP, device.IsActive).Scan(&device.ID)
 
 	return err
 }
 
-func (s *Storage) IsExistsUser(telegramID int) (bool, error) {
+func (s *Storage) IsExistsUser(ctx context.Context, telegramID int) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM users WHERE telegram_id = $1)`
-	err := s.pool.QueryRow(context.Background(), query, telegramID).Scan(&exists)
+	err := s.pool.QueryRow(ctx, query, telegramID).Scan(&exists)
 	if err != nil {
 		return false, fmt.Errorf("can't check if user exists: %v", err)
 	}

@@ -7,12 +7,12 @@ import (
 
 type Storage interface {
 	InitDB()
-	CreateDevice(device *Device) error
-	CreateUser(user User) error
-	IsExistsUser(telegramID int) (bool, error)
+	CreateDevice(ctx context.Context, device *Device) error
+	CreateUser(ctx context.Context, user *User) error
+	IsExistsUser(ctx context.Context, telegramID int) (bool, error)
 	GetIP(ctx context.Context) (string, error)
 	UpdateIP(ctx context.Context, newIP string) error
-	GetDevice(telegramID int) (Device, error)
+	GetDevice(ctx context.Context, telegramID int) (Device, error)
 }
 
 type User struct {
