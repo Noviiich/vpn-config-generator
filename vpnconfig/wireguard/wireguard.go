@@ -43,6 +43,10 @@ func NewWGManager(configPath string) *WGManager {
 	}
 }
 
+func (wg *WGManager) GetConfig(privateUserKey string, ipAddrUser string) (string, error) {
+	return wg.createUserConfig(privateUserKey, ipAddrUser), nil
+}
+
 func (wg *WGManager) GenerateConfig(privateUserKey string, publicUserKey string, ipAddrUser string) (string, error) {
 	err := wg.changeBaseConfig(publicUserKey, ipAddrUser)
 	if err != nil {
