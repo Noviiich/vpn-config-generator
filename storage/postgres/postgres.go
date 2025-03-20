@@ -54,6 +54,28 @@ CREATE TABLE IF NOT EXISTS ip_pool (
 	}
 }
 
+func (s *Storage) GetDevice(telegramID int) (storage.Device, error) {
+	query := `SELECT id, user_id, private_key, public_key, ip, is_active 
+              FROM devices 
+              WHERE user_id = $1`
+
+	var device storage.Device
+	err := s.pool.QueryRow(context.Background(), query, telegramID).Scan(
+		&device.ID,
+		&device.UserID,
+		&device.PrivateKey,
+		&device.PublicKey,
+		&device.IP,
+		&device.IsActive,
+	)
+
+	if err != nil {
+		return storage.Device{}, err
+	}
+
+	return device, nil
+}
+
 func (s *Storage) CreateUser(user storage.User) error {
 	_, err := s.pool.Exec(context.Background(),
 		`INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry) 
