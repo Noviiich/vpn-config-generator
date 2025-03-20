@@ -76,7 +76,7 @@ func (s *Storage) GetDevice(ctx context.Context, telegramID int) (storage.Device
 	return device, nil
 }
 
-func (s *Storage) CreateUser(ctx context.Context, user storage.User) error {
+func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
 	_, err := s.pool.Exec(context.Background(),
 		`INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry) 
 		 VALUES ($1, $2, $3, $4) ON CONFLICT (telegram_id) DO NOTHING`,
