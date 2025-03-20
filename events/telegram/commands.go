@@ -9,9 +9,10 @@ import (
 )
 
 const (
-	HelpCmd  = "/help"
-	StartCmd = "/start"
-	WGVpnCmd = "/wireguard"
+	HelpCmd   = "/help"
+	StartCmd  = "/start"
+	WGVpnCmd  = "/wireguard"
+	VpnStatus = "/status"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -22,6 +23,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	switch text {
 	case WGVpnCmd:
 		return p.CreateConfig(ctx, chatID, username)
+	case VpnStatus:
+		return p.statusSubscription(ctx, chatID, username) //доработать
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -54,4 +57,10 @@ func (p *Processor) sendHelp(ctx context.Context, chatID int) error {
 
 func (p *Processor) sendHello(ctx context.Context, chatID int) error {
 	return p.tg.SendMessage(ctx, chatID, msgHello)
+}
+
+// доработать
+func (p *Processor) statusSubscription(ctx context.Context, chatID int, username string) (err error) {
+	// p.service.StatusSubscription()
+	return nil
 }

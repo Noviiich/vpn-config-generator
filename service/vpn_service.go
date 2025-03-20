@@ -27,11 +27,40 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 	}
 }
 
-func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
-	defer func() { err = e.WrapIfErr("can't create text config", err) }()
+// доработать
+func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {
+	defer func() { err = e.WrapIfErr("can't get status subscription", err) }()
+
+	exists, err := s.isExistsUser(ctx, chatID)
+	if err != nil {
+		return "", nil
+	}
+
+	if !exists {
+		_, err = s.createNewUser(ctx, username, chatID)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return "", err
+
+}
+
+func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {
+	defer func() { err = e.WrapIfErr("can't is exists user", err) }()
 	exists, err := s.repo.IsExistsUser(ctx, chatID)
 	if err != nil {
-		return "", err
+		return exists, err
+	}
+	return exists, nil
+}
+
+func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
+	defer func() { err = e.WrapIfErr("can't create text config", err) }()
+	exists, err := s.isExistsUser(ctx, chatID)
+	if err != nil {
+		return "", nil
 	}
 
 	if !exists {

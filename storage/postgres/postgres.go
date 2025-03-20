@@ -84,6 +84,17 @@ func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
 	return err
 }
 
+// func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, error) {
+// 	query := `SELECT telegram_id, user_id, private_key, public_key, ip, is_active
+//               FROM devices
+//               WHERE user_id = $1`
+// 	_, err := s.pool.Exec(context.Background(),
+// 		`INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry)
+// 		 VALUES ($1, $2, $3, $4) ON CONFLICT (telegram_id) DO NOTHING`,
+// 		user.TelegramID, user.Username, user.SubscriptionActive, user.SubscriptionExpiry)
+// 	return err
+// }
+
 func (s *Storage) CreateDevice(ctx context.Context, device *storage.Device) error {
 	query := `INSERT INTO devices (user_id, private_key, public_key, ip, is_active) 
 	          VALUES ($1, $2, $3, $4, $5) RETURNING id`
