@@ -17,6 +17,7 @@ const (
 	msgErrorSubscribe    = "Ошибка при подписке"
 	msgErrorGetConfig    = "Ошибка при получении конфигурации"
 	msgErrorSendDocument = "Ошибка при отправке файла"
-	msgNoSubscription    = "Вы не подписаны на рассылку конфигураций WireGuard"
-	msgErrorDeleteUser   = "Ошибка при удалении пользователя"
+	msgNoSubscription    = `Вы не подписаны на рассылку конфигураций WireGuard
+Не расстраивайтесь, выполните команду /subscribe`
+	msgErrorDeleteUser = "Ошибка при удалении пользователя"
 )
