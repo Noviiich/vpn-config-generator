@@ -43,3 +43,10 @@ func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, e
 
 	return &user, nil
 }
+
+func (s *Storage) UpdateUser(ctx context.Context, user *storage.User) error {
+	_, err := s.pool.Exec(ctx,
+		`UPDATE users SET subscription_active = $1, subscription_expiry = $2 WHERE telegram_id = $3`,
+		user.SubscriptionActive, user.SubscriptionExpiry, user.TelegramID)
+	return err
+}
