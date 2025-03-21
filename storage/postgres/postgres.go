@@ -22,7 +22,7 @@ func New(username string, password string, dbName string) *Storage {
 	return &Storage{pool: pool}
 }
 
-func (s *Storage) InitDB() {
+func (s *Storage) InitDB(ctx context.Context) {
 	initCommand := `
 CREATE TABLE IF NOT EXISTS users (
 telegram_id BIGINT PRIMARY KEY,
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS ip_pool (
 	last_ip TEXT NOT NULL
 );`
 
-	_, err := s.pool.Exec(context.Background(), initCommand)
+	_, err := s.pool.Exec(ctx, initCommand)
 	if err != nil {
 		log.Fatalf("can't init postgeSQL: %v", err)
 	}

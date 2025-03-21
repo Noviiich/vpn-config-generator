@@ -2,26 +2,23 @@ package service
 
 import (
 	"context"
-	"time"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
-func (s *VPNService) createNewUser(ctx context.Context, username string, chatID int) (u *storage.User, err error) {
+func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int) (err error) {
 	defer func() { err = e.WrapIfErr("can't create new user", err) }()
 	user := &storage.User{
-		TelegramID:         chatID,
-		Username:           username,
-		SubscriptionActive: true,
-		SubscriptionExpiry: time.Now().AddDate(0, 1, 0),
+		TelegramID: chatID,
+		Username:   username,
 	}
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {
-		return nil, err
+		return err
 	}
 
-	return user, nil
+	return nil
 }
 
 func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {

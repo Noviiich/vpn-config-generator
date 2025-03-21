@@ -8,3 +8,10 @@ const (
 	msgUnknownCommand = "Unknown command 🤔"
 	msgAlreadyExists  = "You have already have this page in your list 🤗"
 )
+
+const (
+	msgErrorCreateUser = "Ошибка при создании пользователя"
+	msgErrorGetStatus  = "Ошибка при получении статуса подписки"
+	msgErrorSubscribe  = "Ошибка при подписке"
+	msgSubscribe       = "Вы успешно подписались на рассылку конфигураций WireGuard"
+)

@@ -7,7 +7,7 @@ import (
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
-func (s *VPNService) createNewDevice(ctx context.Context, userID int) (d *storage.Device, err error) {
+func (s *VPNService) createDevice(ctx context.Context, userID int) (d *storage.Device, err error) {
 	defer func() { err = e.WrapIfErr("can't create new device", err) }()
 	privateUserKey, publicUserKey, err := generateKey()
 	if err != nil {

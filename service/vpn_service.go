@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os/exec"
-	"time"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 	"github.com/Noviiich/vpn-config-generator/storage"
@@ -23,40 +22,6 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 		conf: conf,
 		repo: repo,
 	}
-}
-
-func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {
-	defer func() { err = e.WrapIfErr("can't get status subscription", err) }()
-
-	exists, err := s.isExistsUser(ctx, chatID)
-	if err != nil {
-		return "", nil
-	}
-
-	if !exists {
-		_, err = s.createNewUser(ctx, username, chatID)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	user, err := s.repo.GetUser(ctx, chatID)
-	if err != nil {
-		return "", err
-	}
-
-	if user.SubscriptionActive {
-		remaining := time.Until(user.SubscriptionExpiry)
-		days := int(remaining.Hours()) / 24
-		hours := int(remaining.Hours()) % 24
-
-		msg := fmt.Sprintf(`Вы молодец, у вас есть подписка!!!
-Ваша подписка истекает через %d дней, %d часов`, days, hours)
-		return msg, nil
-	}
-
-	return "У вас не подписки. Не расстраивайтесь, вы все еще можете ее оформить", nil
-
 }
 
 func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
@@ -89,12 +54,12 @@ func (s *VPNService) getConfig(ctx context.Context, chatID int) (string, error) 
 
 func (s *VPNService) createNewConfig(ctx context.Context, username string, chatID int) (c string, err error) {
 	defer func() { err = e.WrapIfErr("can't create new config", err) }()
-	user, err := s.createNewUser(ctx, username, chatID)
+	err = s.CreateUser(ctx, username, chatID)
 	if err != nil {
 		return "", err
 	}
 
-	device, err := s.createNewDevice(ctx, user.TelegramID)
+	device, err := s.createDevice(ctx, chatID)
 	if err != nil {
 		return "", err
 	}
