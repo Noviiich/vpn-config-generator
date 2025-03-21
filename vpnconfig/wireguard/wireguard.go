@@ -82,8 +82,14 @@ AllowedIPs = %s\n`, userPublicKey, ipAddrUser)
 		return err
 	}
 
-	// Перезагрузка WireGuard
-	err = exec.Command("systemctl", "restart", "wg-quick@wg0").Run()
+	// остановка WireGuard
+	err = exec.Command("systemctl", "stop", "wg-quick@wg0").Run()
+	if err != nil {
+		return err
+	}
+
+	// старт WireGuard
+	err = exec.Command("systemctl", "start", "wg-quick@wg0").Run()
 	if err != nil {
 		return err
 	}
