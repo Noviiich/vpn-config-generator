@@ -5,9 +5,7 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os/exec"
-	"strconv"
 	"time"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
@@ -61,15 +59,6 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 
 }
 
-func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {
-	defer func() { err = e.WrapIfErr("can't is exists user", err) }()
-	exists, err := s.repo.IsExistsUser(ctx, chatID)
-	if err != nil {
-		return exists, err
-	}
-	return exists, nil
-}
-
 func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
 	defer func() { err = e.WrapIfErr("can't create text config", err) }()
 	exists, err := s.isExistsUser(ctx, chatID)
@@ -115,84 +104,6 @@ func (s *VPNService) createNewConfig(ctx context.Context, username string, chatI
 		return "", err
 	}
 	return config, nil
-}
-
-func (s *VPNService) createNewUser(ctx context.Context, username string, chatID int) (u *storage.User, err error) {
-	defer func() { err = e.WrapIfErr("can't create new user", err) }()
-	user := &storage.User{
-		TelegramID:         chatID,
-		Username:           username,
-		SubscriptionActive: true,
-		SubscriptionExpiry: time.Now().AddDate(0, 1, 0),
-	}
-
-	if err := s.repo.CreateUser(ctx, user); err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (s *VPNService) createNewDevice(ctx context.Context, userID int) (d *storage.Device, err error) {
-	defer func() { err = e.WrapIfErr("can't create new device", err) }()
-	privateUserKey, publicUserKey, err := generateKey()
-	if err != nil {
-		return nil, err
-	}
-
-	ipUser, err := s.getNextIP(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	device := &storage.Device{
-		UserID:     userID,
-		PrivateKey: privateUserKey,
-		PublicKey:  publicUserKey,
-		IP:         ipUser,
-		IsActive:   true,
-	}
-	if err := s.repo.CreateDevice(ctx, device); err != nil {
-		return nil, err
-	}
-
-	return device, nil
-}
-
-func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
-	defer func() { err = e.WrapIfErr("can't get next ip: %v", err) }()
-	lastIP, err := s.repo.GetIP(ctx)
-	if err != nil {
-		return "", err
-	}
-
-	ipFormat := net.ParseIP(lastIP)
-	if ipFormat == nil {
-		return "", err
-	}
-
-	ipParts := ipFormat.To4()
-	if ipParts == nil {
-		return "", err
-	}
-
-	lastOctet, _ := strconv.Atoi(fmt.Sprintf("%d", ipParts[3]))
-	if lastOctet >= 254 { // Максимум x.x.x.254
-		return "", err
-	}
-
-	newIP := fmt.Sprintf("%d.%d.%d.%d",
-		ipParts[0],
-		ipParts[1],
-		ipParts[2],
-		lastOctet+1,
-	)
-
-	if err = s.repo.UpdateIP(ctx, newIP); err != nil {
-		return "", err
-	}
-
-	return newIP, nil
 }
 
 func generateKey() (private string, public string, err error) {
