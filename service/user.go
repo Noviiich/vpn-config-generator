@@ -13,7 +13,7 @@ func (s *VPNService) createNewUser(ctx context.Context, username string, chatID 
 	user := &storage.User{
 		TelegramID:         chatID,
 		Username:           username,
-		SubscriptionActive: false,
+		SubscriptionActive: true,
 		SubscriptionExpiry: time.Now().AddDate(0, 1, 0),
 	}
 
