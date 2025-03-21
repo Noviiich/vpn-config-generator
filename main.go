@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 
 	tgClient "github.com/Noviiich/vpn-config-generator/clients/telegram"
@@ -40,7 +41,7 @@ func main() {
 	// }
 	// fmt.Printf("%s\n", bodyText)
 	repo := postgres.New("novich", "novich", "vpndb")
-	repo.InitDB()
+	repo.InitDB(context.Background())
 	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
 	vpnService := service.NewVPNService(vpnConfig, repo)
 
