@@ -15,6 +15,7 @@ type Storage interface {
 	GetIP(ctx context.Context) (string, error)
 	UpdateIP(ctx context.Context, newIP string) error
 	GetDevice(ctx context.Context, telegramID int) (*Device, error)
+	IsExistsDevice(ctx context.Context, telegramID int) (bool, error)
 }
 
 type User struct {

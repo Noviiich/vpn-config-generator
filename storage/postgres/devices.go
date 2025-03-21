@@ -37,3 +37,13 @@ func (s *Storage) CreateDevice(ctx context.Context, device *storage.Device) erro
 
 	return err
 }
+
+func (s *Storage) IsExistsDevice(ctx context.Context, telegramID int) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM devices WHERE user_id = $1)`
+	err := s.pool.QueryRow(ctx, query, telegramID).Scan(&exists)
+	if err != nil {
+		return false, err
+	}
+	return exists, nil
+}

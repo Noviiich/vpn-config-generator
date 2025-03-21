@@ -10,8 +10,10 @@ const (
 )
 
 const (
-	msgErrorCreateUser = "Ошибка при создании пользователя"
-	msgErrorGetStatus  = "Ошибка при получении статуса подписки"
-	msgErrorSubscribe  = "Ошибка при подписке"
-	msgSubscribe       = "Вы успешно подписались на рассылку конфигураций WireGuard"
+	msgErrorCreateUser   = "Ошибка при создании пользователя"
+	msgErrorGetStatus    = "Ошибка при получении статуса подписки"
+	msgErrorSubscribe    = "Ошибка при подписке"
+	msgSubscribe         = "Вы успешно подписались на рассылку конфигураций WireGuard"
+	msgErrorGetConfig    = "Ошибка при получении конфигурации"
+	msgErrorSendDocument = "Ошибка при отправке файла"
 )

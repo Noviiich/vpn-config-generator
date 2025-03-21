@@ -32,3 +32,12 @@ func (s *VPNService) createDevice(ctx context.Context, userID int) (d *storage.D
 
 	return device, nil
 }
+
+func (s *VPNService) getDevice(ctx context.Context, chatID int) (d *storage.Device, err error) {
+	defer func() { err = e.WrapIfErr("can't get device", err) }()
+	return s.repo.GetDevice(ctx, chatID)
+}
+
+func (s *VPNService) isExistsDevice(ctx context.Context, chatID int) (bool, error) {
+	return s.repo.IsExistsDevice(ctx, chatID)
+}

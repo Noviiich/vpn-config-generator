@@ -23,9 +23,9 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 
 	switch text {
 	case WGVpnCmd:
-		return p.createConfig(ctx, chatID, username)
+		return p.getConfig(ctx, chatID, username)
 	case VpnStatus:
-		return p.statusSubscription(ctx, chatID, username)
+		return p.getStatusSubscription(ctx, chatID, username)
 	case VpnSub:
 		return p.subscribe(ctx, chatID)
 	case HelpCmd:
@@ -37,18 +37,16 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	}
 }
 
-func (p *Processor) createConfig(ctx context.Context, chatID int, username string) (err error) {
+func (p *Processor) getConfig(ctx context.Context, chatID int, username string) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: can't create config", err) }()
 
-	configText, err := p.service.Create(ctx, username, chatID)
+	configText, err := p.service.GetConfig(ctx, chatID, username)
 	if err != nil {
-		p.tg.SendMessage(ctx, chatID, err.Error())
-		return err
+		return p.tg.SendMessage(ctx, chatID, msgErrorGetConfig)
 	}
 
-	if err := p.tg.SendDocument(ctx, chatID, configText, "Wireguard.conf"); err != nil {
-		p.tg.SendMessage(ctx, chatID, err.Error())
-		return err
+	if err := p.tg.SendDocument(ctx, chatID, configText, "WG_NOV.conf"); err != nil {
+		return p.tg.SendMessage(ctx, chatID, msgErrorSendDocument)
 	}
 
 	return nil
@@ -61,12 +59,12 @@ func (p *Processor) sendHelp(ctx context.Context, chatID int) error {
 func (p *Processor) sendHello(ctx context.Context, chatID int, username string) error {
 	err := p.service.CreateUser(ctx, username, chatID)
 	if err != nil {
-		p.tg.SendMessage(ctx, chatID, msgErrorCreateUser)
+		return p.tg.SendMessage(ctx, chatID, msgErrorCreateUser)
 	}
 	return p.tg.SendMessage(ctx, chatID, msgHello)
 }
 
-func (p *Processor) statusSubscription(ctx context.Context, chatID int, username string) (err error) {
+func (p *Processor) getStatusSubscription(ctx context.Context, chatID int, username string) (err error) {
 	msg, err := p.service.StatusSubscribtion(ctx, username, chatID)
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorGetStatus)
