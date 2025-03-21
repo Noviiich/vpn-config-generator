@@ -44,6 +44,14 @@ func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int
 	return nil
 }
 
+func (s *VPNService) DeleteUser(ctx context.Context, chatID int) error {
+	err := s.repo.DeleteUser(ctx, chatID)
+	if err != nil {
+		return e.Wrap("can't delete user", err)
+	}
+	return nil
+}
+
 func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {
 	exists, err := s.repo.IsExistsUser(ctx, chatID)
 	if err != nil {

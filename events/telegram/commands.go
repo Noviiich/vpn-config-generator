@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	HelpCmd   = "/help"
-	StartCmd  = "/start"
-	WGVpnCmd  = "/wireguard"
-	VpnStatus = "/status"
-	VpnSub    = "/subscribe"
+	HelpCmd    = "/help"
+	StartCmd   = "/start"
+	WGVpnCmd   = "/wireguard"
+	VpnStatus  = "/status"
+	VpnSub     = "/subscribe"
+	UserDelete = "/userdelete"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -26,6 +27,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 		return p.getConfig(ctx, chatID, username)
 	case VpnStatus:
 		return p.getStatusSubscription(ctx, chatID, username)
+	case UserDelete:
+		return p.deleteUser(ctx, chatID)
 	case VpnSub:
 		return p.subscribe(ctx, chatID)
 	case HelpCmd:
@@ -81,4 +84,12 @@ func (p *Processor) subscribe(ctx context.Context, chatID int) error {
 		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
 	}
 	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
+}
+
+func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
+	err := p.service.DeleteUser(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, msgErrorDeleteUser)
+	}
+	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
 }

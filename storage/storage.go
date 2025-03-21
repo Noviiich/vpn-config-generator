@@ -11,6 +11,7 @@ type Storage interface {
 	GetUser(ctx context.Context, telegramID int) (*User, error)
 	UpdateUser(ctx context.Context, user *User) error
 	CreateUser(ctx context.Context, user *User) error
+	DeleteUser(ctx context.Context, telegramID int) error
 	IsExistsUser(ctx context.Context, telegramID int) (bool, error)
 	GetIP(ctx context.Context) (string, error)
 	UpdateIP(ctx context.Context, newIP string) error

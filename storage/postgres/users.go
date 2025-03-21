@@ -50,3 +50,8 @@ func (s *Storage) UpdateUser(ctx context.Context, user *storage.User) error {
 		user.SubscriptionActive, user.SubscriptionExpiry, user.TelegramID)
 	return err
 }
+
+func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
+	_, err := s.pool.Exec(ctx, `DELETE FROM users WHERE telegram_id = $1`, telegramID)
+	return err
+}
