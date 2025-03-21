@@ -49,9 +49,12 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 	}
 
 	if user.SubscriptionActive {
-		msg := fmt.Sprintf(`Вау, у вас есть подписка
+		var msg string
+		remaining := time.Until(user.SubscriptionExpiry)
+		if remaining > 0 {
+			msg = fmt.Sprintf("Ваша подписка истекает через %s", remaining.Truncate(time.Second))
+		}
 
-Дата окончания: %s`, user.SubscriptionExpiry.GoString())
 		return msg, nil
 	}
 
