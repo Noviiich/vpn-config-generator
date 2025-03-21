@@ -7,6 +7,29 @@ import (
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
+func (s *VPNService) GetUser(ctx context.Context, chatID int, username string) (user *storage.User, err error) {
+	defer func() { err = e.WrapIfErr("can't get user", err) }()
+
+	exists, err := s.isExistsUser(ctx, chatID)
+	if err != nil {
+		return nil, err
+	}
+
+	if !exists {
+		err = s.CreateUser(ctx, username, chatID)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	user, err = s.repo.GetUser(ctx, chatID)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int) (err error) {
 	defer func() { err = e.WrapIfErr("can't create new user", err) }()
 	user := &storage.User{
