@@ -43,7 +43,19 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 		}
 	}
 
-	return "", err
+	user, err := s.repo.GetUser(ctx, chatID)
+	if err != nil {
+		return "", err
+	}
+
+	if user.SubscriptionActive {
+		msg := fmt.Sprintf(`Вау, у вас есть подписка
+
+Дата окончания: %s`, user.SubscriptionExpiry.GoString())
+		return msg, nil
+	}
+
+	return "У вас не подписки", nil
 
 }
 

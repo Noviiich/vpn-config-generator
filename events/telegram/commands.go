@@ -24,7 +24,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	case WGVpnCmd:
 		return p.CreateConfig(ctx, chatID, username)
 	case VpnStatus:
-		return p.statusSubscription(ctx, chatID, username) //доработать
+		return p.statusSubscription(ctx, chatID, username)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -59,8 +59,11 @@ func (p *Processor) sendHello(ctx context.Context, chatID int) error {
 	return p.tg.SendMessage(ctx, chatID, msgHello)
 }
 
-// доработать
 func (p *Processor) statusSubscription(ctx context.Context, chatID int, username string) (err error) {
-	// p.service.StatusSubscription()
-	return nil
+	msg, err := p.service.StatusSubscribtion(ctx, username, chatID)
+	if err != nil {
+		p.tg.SendMessage(ctx, chatID, err.Error())
+		return err
+	}
+	return p.tg.SendMessage(ctx, chatID, msg)
 }
