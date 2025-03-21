@@ -45,10 +45,9 @@ func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int
 }
 
 func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {
-	defer func() { err = e.WrapIfErr("can't is exists user", err) }()
 	exists, err := s.repo.IsExistsUser(ctx, chatID)
 	if err != nil {
-		return exists, err
+		return exists, e.Wrap("can't check if user exists", err)
 	}
 	return exists, nil
 }
