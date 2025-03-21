@@ -1,6 +1,6 @@
 package telegram
 
-const msgHelp = `Отправьте \wireguard чтобы получить конфигурацию WireGuard`
+const msgHelp = `Отправьте /wireguard чтобы получить конфигурацию WireGuard`
 
 const msgHello = "Hi there! 👾\n\n" + msgHelp
 
