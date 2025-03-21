@@ -27,7 +27,6 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 	}
 }
 
-// доработать
 func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {
 	defer func() { err = e.WrapIfErr("can't get status subscription", err) }()
 
@@ -49,18 +48,13 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 	}
 
 	if user.SubscriptionActive {
-		var msg string
 		remaining := time.Until(user.SubscriptionExpiry)
-		if remaining > 0 {
-			msg = fmt.Sprintf("Ваша подписка истекает через %s", remaining.Truncate(time.Second))
-		} else {
-			msg = "Ваша подписка истекла"
-		}
-
+		msg := fmt.Sprintf(`Вы молодец, у вас есть подписка!!!
+		Ваша подписка истекает через %s`, remaining.Truncate(time.Second))
 		return msg, nil
 	}
 
-	return "У вас не подписки", nil
+	return "У вас не подписки. Не расстраивайтесь, вы все еще можете ее оформить", nil
 
 }
 
@@ -126,7 +120,7 @@ func (s *VPNService) createNewUser(ctx context.Context, username string, chatID 
 		TelegramID:         chatID,
 		Username:           username,
 		SubscriptionActive: true,
-		SubscriptionExpiry: time.Time{}.AddDate(0, 1, 0),
+		SubscriptionExpiry: time.Now().AddDate(0, 1, 0),
 	}
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {
