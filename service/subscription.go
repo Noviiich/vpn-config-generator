@@ -13,7 +13,7 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 
 	exists, err := s.isExistsUser(ctx, chatID)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	if !exists {
@@ -33,12 +33,13 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 		days := int(remaining.Hours()) / 24
 		hours := int(remaining.Hours()) % 24
 
-		msg := fmt.Sprintf(`Вы молодец, у вас есть подписка!!!
-Ваша подписка истекает через %d дней, %d часов`, days, hours)
+		msg := fmt.Sprintf(`Ваша подписка активна!!!
+Она истекает через %d дней, %d часов`, days, hours)
 		return msg, nil
 	}
 
-	return "У вас не подписки. Не расстраивайтесь, вы все еще можете ее оформить", nil
+	return `У вас не подписки. Не расстраивайтесь, вы все еще можете ее оформить.
+Для этого выполните /subscribe`, nil
 }
 
 func (s *VPNService) UpdateSubscription(ctx context.Context, chatID int) (err error) {
