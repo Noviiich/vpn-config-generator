@@ -27,61 +27,134 @@ func NewVPNService(conf vpnconfig.VPNConfig, repo storage.Storage) *VPNService {
 	}
 }
 
-func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
-	defer func() { err = e.WrapIfErr("can't create text config: %v", err) }()
-	exists, err := s.repo.IsExistsUser(chatID)
+// доработать
+func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {
+	defer func() { err = e.WrapIfErr("can't get status subscription", err) }()
+
+	exists, err := s.isExistsUser(ctx, chatID)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
 
 	if !exists {
-		privateUserKey, publicUserKey, err := generateKey()
+		_, err = s.createNewUser(ctx, username, chatID)
 		if err != nil {
 			return "", err
 		}
+	}
 
-		ip, err := s.getNextIP(ctx)
-		if err != nil {
-			return "", err
-		}
-
-		if err := s.repo.CreateUser(storage.User{
-			TelegramID:         chatID,
-			Username:           username,
-			SubscriptionActive: true,
-			SubscriptionExpiry: time.Time{},
-		}); err != nil {
-			return "", err
-		}
-
-		if err := s.repo.CreateDevice(&storage.Device{
-			UserID:     chatID,
-			PrivateKey: privateUserKey,
-			PublicKey:  publicUserKey,
-			IP:         ip,
-			IsActive:   true,
-		}); err != nil {
-			return "", err
-		}
-
-		config, err := s.conf.GenerateConfig(privateUserKey, publicUserKey, ip)
-		if err != nil {
-			return "", err
-		}
-		return config, nil
-	} 
-
-	device, err := s.repo.GetDevice(chatID)
+	user, err := s.repo.GetUser(ctx, chatID)
 	if err != nil {
 		return "", err
 	}
 
-	config, err := s.conf.GetConfig(device.PrivateKey, device.IP)
+	if user.SubscriptionActive {
+		msg := fmt.Sprintf(`Вау, у вас есть подписка
+
+Дата окончания: %s`, user.SubscriptionExpiry.GoString())
+		return msg, nil
+	}
+
+	return "У вас не подписки", nil
+
+}
+
+func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err error) {
+	defer func() { err = e.WrapIfErr("can't is exists user", err) }()
+	exists, err := s.repo.IsExistsUser(ctx, chatID)
+	if err != nil {
+		return exists, err
+	}
+	return exists, nil
+}
+
+func (s *VPNService) Create(ctx context.Context, username string, chatID int) (c string, err error) {
+	defer func() { err = e.WrapIfErr("can't create text config", err) }()
+	exists, err := s.isExistsUser(ctx, chatID)
+	if err != nil {
+		return "", nil
+	}
+
+	if !exists {
+		return s.createNewConfig(ctx, username, chatID)
+	}
+
+	return s.getConfig(ctx, chatID)
+}
+
+func (s *VPNService) getConfig(ctx context.Context, chatID int) (string, error) {
+	device, err := s.repo.GetDevice(ctx, chatID)
+	if err != nil {
+		return "", fmt.Errorf("can't get config: %v", err)
+	}
+
+	conf, err := s.conf.GetConfig(device.PrivateKey, device.IP)
+	if err != nil {
+		return "", fmt.Errorf("can't get config: %v", err)
+	}
+
+	return conf, nil
+}
+
+func (s *VPNService) createNewConfig(ctx context.Context, username string, chatID int) (c string, err error) {
+	defer func() { err = e.WrapIfErr("can't create new config", err) }()
+	user, err := s.createNewUser(ctx, username, chatID)
 	if err != nil {
 		return "", err
 	}
 
+	device, err := s.createNewDevice(ctx, user.TelegramID)
+	if err != nil {
+		return "", err
+	}
+
+	config, err := s.conf.GenerateConfig(device.PrivateKey, device.PublicKey, device.IP)
+	if err != nil {
+		return "", err
+	}
 	return config, nil
+}
+
+func (s *VPNService) createNewUser(ctx context.Context, username string, chatID int) (u *storage.User, err error) {
+	defer func() { err = e.WrapIfErr("can't create new user", err) }()
+	user := &storage.User{
+		TelegramID:         chatID,
+		Username:           username,
+		SubscriptionActive: true,
+		SubscriptionExpiry: time.Time{}.AddDate(0, 1, 0),
+	}
+
+	if err := s.repo.CreateUser(ctx, user); err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
+func (s *VPNService) createNewDevice(ctx context.Context, userID int) (d *storage.Device, err error) {
+	defer func() { err = e.WrapIfErr("can't create new device", err) }()
+	privateUserKey, publicUserKey, err := generateKey()
+	if err != nil {
+		return nil, err
+	}
+
+	ipUser, err := s.getNextIP(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	device := &storage.Device{
+		UserID:     userID,
+		PrivateKey: privateUserKey,
+		PublicKey:  publicUserKey,
+		IP:         ipUser,
+		IsActive:   true,
+	}
+	if err := s.repo.CreateDevice(ctx, device); err != nil {
+		return nil, err
+	}
+
+	return device, nil
 }
 
 func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
