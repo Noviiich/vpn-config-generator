@@ -16,4 +16,5 @@ const (
 	msgSubscribe         = "Вы успешно подписались на рассылку конфигураций WireGuard"
 	msgErrorGetConfig    = "Ошибка при получении конфигурации"
 	msgErrorSendDocument = "Ошибка при отправке файла"
+	msgNoSubscription    = "Вы не подписаны на рассылку конфигураций WireGuard"
 )

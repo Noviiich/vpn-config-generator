@@ -22,6 +22,10 @@ func (s *VPNService) GetConfig(ctx context.Context, chatID int, username string)
 		return "", err
 	}
 
+	if !user.SubscriptionActive {
+		return "", nil
+	}
+
 	device, err := s.GetDevice(ctx, user.TelegramID)
 	if err != nil {
 		return "", err

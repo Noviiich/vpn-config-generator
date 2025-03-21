@@ -44,6 +44,9 @@ func (p *Processor) getConfig(ctx context.Context, chatID int, username string) 
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorGetConfig)
 	}
+	if err == nil && configText == "" {
+		return p.tg.SendMessage(ctx, chatID, msgNoSubscription)
+	}
 
 	if err := p.tg.SendDocument(ctx, chatID, configText, "WG_NOV.conf"); err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorSendDocument)
