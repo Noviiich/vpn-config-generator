@@ -15,6 +15,7 @@ const (
 	VpnStatus  = "/status"
 	VpnSub     = "/subscribe"
 	UserDelete = "/userdelete"
+	GetUsers   = "/getusers"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -27,6 +28,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 		return p.getConfig(ctx, chatID, username)
 	case VpnStatus:
 		return p.getStatusSubscription(ctx, chatID, username)
+	case GetUsers:
+		return p.getUsers(ctx, chatID)
 	case UserDelete:
 		return p.deleteUser(ctx, chatID)
 	case VpnSub:
@@ -92,4 +95,15 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 		return p.tg.SendMessage(ctx, chatID, msgErrorDeleteUser)
 	}
 	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
+}
+
+func (p *Processor) getUsers(ctx context.Context, chatID int) error {
+	users, err := p.service.GetUsers(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, msgErrorGetUsers)
+	}
+	if users == "" {
+		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
+	}
+	return p.tg.SendMessage(ctx, chatID, users)
 }

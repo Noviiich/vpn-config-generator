@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"strings"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 	"github.com/Noviiich/vpn-config-generator/storage"
@@ -58,4 +59,13 @@ func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err
 		return exists, e.Wrap("can't check if user exists", err)
 	}
 	return exists, nil
+}
+
+func (s *VPNService) GetUsers(ctx context.Context, chatID int) (string, error) {
+	users, err := s.repo.GetUsers(ctx, chatID)
+	if err != nil {
+		return "", e.Wrap("can't get users", err)
+	}
+	result := strings.Join(users, "\n")
+	return result, nil
 }

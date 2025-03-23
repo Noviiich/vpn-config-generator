@@ -55,3 +55,31 @@ func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
 	_, err := s.pool.Exec(ctx, `DELETE FROM users WHERE telegram_id = $1`, telegramID)
 	return err
 }
+
+func (s *Storage) GetUsers(ctx context.Context, telegramID int) ([]string, error) {
+	query := `SELECT username FROM users`
+
+	rows, err := s.pool.Query(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var usernames []string
+	for rows.Next() {
+		var username string
+		err := rows.Scan(&username)
+		if err != nil {
+			return nil, err
+		}
+		usernames = append(usernames, username)
+	}
+
+	// Проверяем наличие ошибок после итерации по rows
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return usernames, nil
+
+}
