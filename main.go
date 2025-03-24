@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"log"
+	"time"
 
 	tgClient "github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/config"
 	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
+	subscription_consumer "github.com/Noviiich/vpn-config-generator/consumer/subscription-consumer"
 	"github.com/Noviiich/vpn-config-generator/events/telegram"
 	"github.com/Noviiich/vpn-config-generator/service"
 	"github.com/Noviiich/vpn-config-generator/storage/postgres"
@@ -55,5 +57,10 @@ func main() {
 	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
 	if err := consumer.Start(); err != nil {
 		log.Fatal("service is stopped", err)
+	}
+
+	checkSub := subscription_consumer.New(repo, time.Minute)
+	if err := checkSub.Start(); err != nil {
+		log.Fatal("check subscription is stopped", err)
 	}
 }

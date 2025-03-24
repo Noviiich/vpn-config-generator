@@ -57,7 +57,7 @@ func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
 }
 
 func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
-	query := `SELECT username FROM users`
+	query := `SELECT telegram_id, username, subscription_active, subscription_expiry FROM users`
 
 	rows, err := s.pool.Query(ctx, query)
 	if err != nil {
