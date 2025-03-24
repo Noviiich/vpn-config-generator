@@ -98,7 +98,7 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 }
 
 func (p *Processor) getUsers(ctx context.Context, chatID int) error {
-	users, err := p.service.GetUsers(ctx, chatID)
+	users, err := p.service.GetUsers(ctx)
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorGetUsers)
 	}

@@ -61,11 +61,16 @@ func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err
 	return exists, nil
 }
 
-func (s *VPNService) GetUsers(ctx context.Context, chatID int) (string, error) {
-	users, err := s.repo.GetUsers(ctx, chatID)
+func (s *VPNService) GetUsers(ctx context.Context) (string, error) {
+	users, err := s.repo.GetUsers(ctx)
 	if err != nil {
 		return "", e.Wrap("can't get users", err)
 	}
-	result := strings.Join(users, "\n")
+
+	var usernames []string
+	for _, user := range users {
+		usernames = append(usernames, user.Username)
+	}
+	result := strings.Join(usernames, "\n")
 	return result, nil
 }

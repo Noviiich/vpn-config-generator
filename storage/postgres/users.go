@@ -56,7 +56,7 @@ func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
 	return err
 }
 
-func (s *Storage) GetUsers(ctx context.Context, telegramID int) ([]string, error) {
+func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
 	query := `SELECT username FROM users`
 
 	rows, err := s.pool.Query(ctx, query)
@@ -65,14 +65,19 @@ func (s *Storage) GetUsers(ctx context.Context, telegramID int) ([]string, error
 	}
 	defer rows.Close()
 
-	var usernames []string
+	var users []storage.User
 	for rows.Next() {
-		var username string
-		err := rows.Scan(&username)
+		var user storage.User
+		err := rows.Scan(
+			&user.TelegramID,
+			&user.Username,
+			&user.SubscriptionActive,
+			&user.SubscriptionExpiry,
+		)
 		if err != nil {
 			return nil, err
 		}
-		usernames = append(usernames, username)
+		users = append(users, user)
 	}
 
 	// Проверяем наличие ошибок после итерации по rows
@@ -80,6 +85,6 @@ func (s *Storage) GetUsers(ctx context.Context, telegramID int) ([]string, error
 		return nil, err
 	}
 
-	return usernames, nil
+	return users, nil
 
 }
