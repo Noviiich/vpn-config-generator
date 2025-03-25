@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -44,6 +45,7 @@ func main() {
 	// fmt.Printf("%s\n", bodyText)
 	repo := postgres.New("novich", "novich", "vpndb")
 	repo.InitDB(context.Background())
+	// vpnConfig := mock.NewWGMockManager("/gi")
 	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
 	vpnService := service.NewVPNService(vpnConfig, repo)
 
@@ -54,13 +56,27 @@ func main() {
 
 	log.Print("service started")
 
-	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
-	if err := consumer.Start(); err != nil {
-		log.Fatal("service is stopped", err)
-	}
+	consumerErrChan := make(chan error)
+	subCheckErrChan := make(chan error)
 
-	checkSub := subscription_consumer.New(repo, time.Minute)
-	if err := checkSub.Start(); err != nil {
-		log.Fatal("check subscription is stopped", err)
+	go func() {
+		consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
+		if err := consumer.Start(); err != nil {
+			consumerErrChan <- fmt.Errorf("event consumer stopped: %v", err)
+		}
+	}()
+
+	go func() {
+		checkSub := subscription_consumer.New(repo, 24*time.Hour)
+		if err := checkSub.Start(); err != nil {
+			subCheckErrChan <- fmt.Errorf("subscription checker stopped: %v", err)
+		}
+	}()
+
+	select {
+	case err := <-consumerErrChan:
+		log.Fatal(err)
+	case err := <-subCheckErrChan:
+		log.Fatal(err)
 	}
 }
