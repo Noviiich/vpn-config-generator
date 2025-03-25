@@ -1,8 +1,6 @@
 CREATE TABLE IF NOT EXISTS users (
-    telegram_id BIGINT PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    subscription_active BOOLEAN DEFAULT FALSE,
-    subscription_expiry TIMESTAMP
+telegram_id BIGINT PRIMARY KEY,
+username TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS devices (
@@ -12,4 +10,15 @@ CREATE TABLE IF NOT EXISTS devices (
     public_key TEXT NOT NULL,
     ip TEXT NOT NULL,
     is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE IF NOT EXISTS ip_pool (
+	id SERIAL PRIMARY KEY,
+	last_ip TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions (
+    user_id BIGINT PRIMARY KEY REFERENCES users(telegram_id) ON DELETE CASCADE,
+    expiry_date TIMESTAMP DEFAULT NULL,
+    is_active BOOLEAN DEFAULT FALSE
 );
