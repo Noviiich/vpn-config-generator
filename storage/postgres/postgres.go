@@ -5,25 +5,30 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jmoiron/sqlx"
 )
 
 type Storage struct {
-	pool *pgxpool.Pool
+	db *sqlx.DB
 }
 
 func New(username string, password string, dbName string) *Storage {
-	dsn := fmt.Sprintf("postgres://%s:%s@localhost:5432/%s", username, password, dbName)
-	pool, err := pgxpool.New(context.Background(), dsn)
+	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
+		"localhost", "5432", username, dbName, password, "disable"))
 	if err != nil {
 		log.Fatal("Ошибка подключения к postgreSQL:", err)
 	}
 
-	return &Storage{pool: pool}
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("Ошибка пинга БД:", err)
+	}
+
+	return &Storage{db: db}
 }
 
 func (s *Storage) InitDB(ctx context.Context) {
-	initCommand := `
+	query := `
 CREATE TABLE IF NOT EXISTS users (
 telegram_id BIGINT PRIMARY KEY,
 username TEXT UNIQUE NOT NULL,
@@ -45,7 +50,7 @@ CREATE TABLE IF NOT EXISTS ip_pool (
 	last_ip TEXT NOT NULL
 );`
 
-	_, err := s.pool.Exec(ctx, initCommand)
+	_, err := s.db.ExecContext(ctx, query)
 	if err != nil {
 		log.Fatalf("can't init postgeSQL: %v", err)
 	}

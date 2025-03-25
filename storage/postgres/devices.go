@@ -12,16 +12,7 @@ func (s *Storage) GetDevice(ctx context.Context, telegramID int) (*storage.Devic
               WHERE user_id = $1`
 
 	var device storage.Device
-	err := s.pool.QueryRow(ctx, query, telegramID).Scan(
-		&device.ID,
-		&device.UserID,
-		&device.PrivateKey,
-		&device.PublicKey,
-		&device.IP,
-		&device.IsActive,
-	)
-
-	if err != nil {
+	if err := s.db.GetContext(ctx, &device, query, telegramID); err != nil {
 		return nil, err
 	}
 
@@ -29,19 +20,29 @@ func (s *Storage) GetDevice(ctx context.Context, telegramID int) (*storage.Devic
 }
 
 func (s *Storage) CreateDevice(ctx context.Context, device *storage.Device) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	query := `INSERT INTO devices (user_id, private_key, public_key, ip, is_active) 
 	          VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
-	err := s.pool.QueryRow(ctx, query,
-		device.UserID, device.PrivateKey, device.PublicKey, device.IP, device.IsActive).Scan(&device.ID)
+	row := tx.QueryRowContext(ctx, query,
+		device.UserID, device.PrivateKey, device.PublicKey, device.IP, device.IsActive)
+	err = row.Scan(&device.ID)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
 
-	return err
+	return tx.Commit()
 }
 
 func (s *Storage) IsExistsDevice(ctx context.Context, telegramID int) (bool, error) {
 	var exists bool
 	query := `SELECT EXISTS(SELECT 1 FROM devices WHERE user_id = $1)`
-	err := s.pool.QueryRow(ctx, query, telegramID).Scan(&exists)
+	err := s.db.QueryRowContext(ctx, query, telegramID).Scan(&exists)
 	if err != nil {
 		return false, err
 	}

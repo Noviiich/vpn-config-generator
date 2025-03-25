@@ -21,18 +21,17 @@ type Storage interface {
 }
 
 type User struct {
-	TelegramID         int
-	Username           string
-	Devices            []Device
-	SubscriptionActive bool
-	SubscriptionExpiry time.Time
+	TelegramID         int       `db:"telegram_id"`
+	Username           string    `db:"username"`
+	SubscriptionActive bool      `db:"subscription_active"`
+	SubscriptionExpiry time.Time `db:"subscription_expiry"`
 }
 
 type Device struct {
-	ID         string
-	UserID     int
-	PrivateKey string
-	PublicKey  string
-	IP         string
-	IsActive   bool
+	ID         string `db:"id"`
+	UserID     int    `db:"user_id"`
+	PrivateKey string `db:"private_key"`
+	PublicKey  string `db:"public_key"`
+	IP         string `db:"ip"`
+	IsActive   bool   `db:"is_active"`
 }
