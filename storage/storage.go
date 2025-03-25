@@ -6,7 +6,6 @@ import (
 )
 
 type Storage interface {
-	InitDB(ctx context.Context)
 	CreateDevice(ctx context.Context, device *Device) error
 	GetUser(ctx context.Context, telegramID int) (*User, error)
 	UpdateUser(ctx context.Context, user *User) error

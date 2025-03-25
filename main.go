@@ -11,9 +11,10 @@ import (
 	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
 	subscription_consumer "github.com/Noviiich/vpn-config-generator/consumer/subscription-consumer"
 	"github.com/Noviiich/vpn-config-generator/events/telegram"
+	"github.com/Noviiich/vpn-config-generator/mock"
 	"github.com/Noviiich/vpn-config-generator/service"
 	"github.com/Noviiich/vpn-config-generator/storage/postgres"
-	"github.com/Noviiich/vpn-config-generator/vpnconfig/wireguard"
+	_ "github.com/lib/pq"
 )
 
 const (
@@ -44,9 +45,8 @@ func main() {
 	// }
 	// fmt.Printf("%s\n", bodyText)
 	repo := postgres.New("novich", "novich", "vpndb")
-	repo.InitDB(context.Background())
-	// vpnConfig := mock.NewWGMockManager("/gi")
-	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
+	vpnConfig := mock.NewWGMockManager("/gi")
+	//vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
 	vpnService := service.NewVPNService(vpnConfig, repo)
 
 	eventsProcessor := telegram.New(
