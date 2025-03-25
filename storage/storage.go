@@ -34,3 +34,9 @@ type Device struct {
 	IP         string `db:"ip"`
 	IsActive   bool   `db:"is_active"`
 }
+
+type Subscription struct {
+	UserID     int       `db:"user_id"`
+	IsActive   bool      `db:"is_active"`
+	ExpiryDate time.Time `db:"expiry_date"`
+}
