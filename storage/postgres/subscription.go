@@ -6,9 +6,9 @@ import (
 )
 
 func (r *Storage) DeactivateSubscription(ctx context.Context, userID int) error {
-	query := `UPDATE users
-			  SET subscription_active = FALSE
-		      WHERE telegram_id = $1;`
+	query := `UPDATE subscription
+			  SET is_active = FALSE
+		      WHERE user_id = $1;`
 	result, err := r.db.ExecContext(ctx, query, userID)
 	if err != nil {
 		return fmt.Errorf("error deactivating subscription for user %d: %w", userID, err)
@@ -24,4 +24,20 @@ func (r *Storage) DeactivateSubscription(ctx context.Context, userID int) error 
 	}
 
 	return nil
+}
+
+func (s *Storage) CreateSubscription(ctx context.Context, userID int) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	query := `INSERT INTO subscription 
+			  (telegram_id) VALUES ($1)`
+
+	_, err = tx.ExecContext(ctx, query, userID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
 }

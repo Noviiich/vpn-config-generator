@@ -11,19 +11,7 @@ import (
 func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {
 	defer func() { err = e.WrapIfErr("can't get status subscription", err) }()
 
-	exists, err := s.isExistsUser(ctx, chatID)
-	if err != nil {
-		return "", err
-	}
-
-	if !exists {
-		err = s.CreateUser(ctx, username, chatID)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	user, err := s.repo.GetUser(ctx, chatID)
+	user, err := s.GetUser(ctx, chatID, username)
 	if err != nil {
 		return "", err
 	}

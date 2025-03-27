@@ -12,11 +12,11 @@ func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
 	if err != nil {
 		return err
 	}
-	query := `INSERT INTO users (telegram_id, username, subscription_active, subscription_expiry) 
-		 VALUES ($1, $2, $3, $4) ON CONFLICT (telegram_id) DO NOTHING`
+	query := `INSERT INTO users (telegram_id, username) 
+		 VALUES ($1, $2) ON CONFLICT (telegram_id) DO NOTHING`
 
 	_, err = tx.ExecContext(ctx, query,
-		user.TelegramID, user.Username, user.SubscriptionActive, user.SubscriptionExpiry)
+		user.TelegramID, user.Username)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (s *Storage) IsExistsUser(ctx context.Context, telegramID int) (bool, error
 }
 
 func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, error) {
-	query := `SELECT telegram_id, username, subscription_active, subscription_expiry
+	query := `SELECT telegram_id, username
               FROM users
               WHERE telegram_id = $1`
 
@@ -49,9 +49,9 @@ func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, e
 }
 
 func (s *Storage) UpdateUser(ctx context.Context, user *storage.User) error {
-	query := `UPDATE users SET subscription_active = $1, subscription_expiry = $2 WHERE telegram_id = $3`
+	query := `UPDATE users SET username = $1 WHERE telegram_id = $2`
 	_, err := s.db.ExecContext(ctx, query,
-		user.SubscriptionActive, user.SubscriptionExpiry, user.TelegramID)
+		user.Username, user.TelegramID)
 	return err
 }
 
@@ -62,7 +62,7 @@ func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
 }
 
 func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
-	query := `SELECT telegram_id, username, subscription_active, subscription_expiry FROM users`
+	query := `SELECT telegram_id, username FROM users`
 
 	var users []storage.User
 	err := s.db.SelectContext(ctx, &users, query)

@@ -69,7 +69,7 @@ func (s *VPNService) GetUsers(ctx context.Context) (string, error) {
 
 	var usernames []string
 	for _, user := range users {
-		usernames = append(usernames, user.Username)
+		usernames = append(usernames, "@"+user.Username)
 	}
 	result := strings.Join(usernames, "\n")
 	return result, nil
