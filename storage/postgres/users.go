@@ -2,7 +2,8 @@ package postgres
 
 import (
 	"context"
-	"fmt"
+	"database/sql"
+	"errors"
 
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
@@ -12,11 +13,17 @@ func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
 	if err != nil {
 		return err
 	}
-	query := `INSERT INTO users (telegram_id, username) 
-		 VALUES ($1, $2) ON CONFLICT (telegram_id) DO NOTHING`
+	query := `
+			INSERT INTO users (telegram_id, username) 
+			VALUES ($1, $2)
+			RETURNING id, created_at, updated_at`
 
-	_, err = tx.ExecContext(ctx, query,
-		user.TelegramID, user.Username)
+	err = tx.QueryRowContext(ctx, query,
+		user.TelegramID, user.Username).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
 	if err != nil {
 		return err
 	}
@@ -24,23 +31,17 @@ func (s *Storage) CreateUser(ctx context.Context, user *storage.User) error {
 	return tx.Commit()
 }
 
-func (s *Storage) IsExistsUser(ctx context.Context, telegramID int) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE telegram_id = $1)`
-	err := s.db.QueryRowContext(ctx, query, telegramID).Scan(&exists)
-	if err != nil {
-		return false, fmt.Errorf("can't check if user exists: %v", err)
-	}
-	return exists, nil
-}
-
 func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, error) {
-	query := `SELECT telegram_id, username
-              FROM users
-              WHERE telegram_id = $1`
+	query := `
+			SELECT *
+			FROM users
+			WHERE telegram_id = $1`
 
 	var user storage.User
 	err := s.db.GetContext(ctx, &user, query, telegramID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -49,20 +50,24 @@ func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, e
 }
 
 func (s *Storage) UpdateUser(ctx context.Context, user *storage.User) error {
-	query := `UPDATE users SET username = $1 WHERE telegram_id = $2`
+	query := `
+			UPDATE users 
+			SET username = $1, updated_at = NOW() 
+			WHERE id = $2`
 	_, err := s.db.ExecContext(ctx, query,
 		user.Username, user.TelegramID)
 	return err
 }
 
-func (s *Storage) DeleteUser(ctx context.Context, telegramID int) error {
-	query := `DELETE FROM users WHERE telegram_id = $1`
-	_, err := s.db.ExecContext(ctx, query, telegramID)
+func (s *Storage) DeleteUser(ctx context.Context, id int) error {
+	query := `
+			DELETE FROM users WHERE id = $1`
+	_, err := s.db.ExecContext(ctx, query, id)
 	return err
 }
 
 func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
-	query := `SELECT telegram_id, username FROM users`
+	query := `SELECT * FROM users`
 
 	var users []storage.User
 	err := s.db.SelectContext(ctx, &users, query)
@@ -71,4 +76,11 @@ func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
 	}
 
 	return users, nil
+}
+
+func (s *Storage) IsExistsUser(ctx context.Context, telegramID int) (bool, error) {
+	var exists bool
+	query := `SELECT EXISTS(SELECT 1 FROM users WHERE telegram_id = $1)`
+	err := s.db.QueryRowContext(ctx, query, telegramID).Scan(&exists)
+	return exists, err
 }

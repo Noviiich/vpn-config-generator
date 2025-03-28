@@ -3,13 +3,48 @@ package postgres
 import (
 	"context"
 	"fmt"
+
+	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
-func (r *Storage) DeactivateSubscription(ctx context.Context, userID int) error {
+func (s *Storage) ActivateSubscription(ctx context.Context, userID, typeID int) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	query := `
+		INSERT INTO subscriptions (user_id, type_id, is_active)
+		VALUES ($1, $2, TRUE)
+		ON CONFLICT (user_id) 
+		DO UPDATE SET
+			type_id = EXCLUDED.type_id,
+			start_date = NOW(),
+			expiry_date = NOW() + (
+				SELECT duration FROM subscription_types 
+				WHERE id = EXCLUDED.type_id
+			),
+			is_active = TRUE`
+
+	_, err = tx.ExecContext(ctx, query, userID, typeID)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func (s *Storage) DeactivateSubscription(ctx context.Context, userID int) error {
+	tx, err := s.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
 	query := `UPDATE subscription
-			  SET is_active = FALSE
+			  SET 
+			  	is_active = FALSE,
+				expiry_date = GREATEST(NOW(), expiry_date)
 		      WHERE user_id = $1;`
-	result, err := r.db.ExecContext(ctx, query, userID)
+
+	result, err := tx.ExecContext(ctx, query, userID)
 	if err != nil {
 		return fmt.Errorf("error deactivating subscription for user %d: %w", userID, err)
 	}
@@ -23,21 +58,20 @@ func (r *Storage) DeactivateSubscription(ctx context.Context, userID int) error 
 		return fmt.Errorf("no subscription deactivated: user with id %d not found", userID)
 	}
 
-	return nil
+	return tx.Commit()
 }
 
-func (s *Storage) CreateSubscription(ctx context.Context, userID int) error {
-	tx, err := s.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	query := `INSERT INTO subscription 
-			  (telegram_id) VALUES ($1)`
+func (s *Storage) CheckSubscription(ctx context.Context, userID int) (*storage.Subscription, error) {
+	query := `
+			SELECT *
+			FROM subscriptions
+			WHERE user_id = $1`
 
-	_, err = tx.ExecContext(ctx, query, userID)
+	var sub storage.Subscription
+	err := s.db.GetContext(ctx, &sub, query, userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return tx.Commit()
+	return &sub, err
 }
