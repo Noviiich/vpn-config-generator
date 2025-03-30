@@ -2,16 +2,13 @@ package service
 
 import (
 	"context"
-	"errors"
 	"strings"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
 
-var ErrUserNotFound = errors.New("пользователя не существует")
-
-func (s *VPNService) GetUser(ctx context.Context, chatID int, username string) (user *storage.User, err error) {
+func (s *VPNService) GetUser(ctx context.Context, chatID int) (user *storage.User, err error) {
 	defer func() { err = e.WrapIfErr("can't get user", err) }()
 
 	user, err = s.repo.GetUser(ctx, chatID)
@@ -39,10 +36,10 @@ func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int
 	return nil
 }
 
-func (s *VPNService) DeleteUser(ctx context.Context, chatID int, username string) error {
-	user, err := s.GetUser(ctx, chatID, username)
+func (s *VPNService) DeleteUser(ctx context.Context, chatID int) error {
+	user, err := s.GetUser(ctx, chatID)
 	if user == nil {
-		return ErrUserNotFound
+		return e.ErrUserNotFound
 	}
 	if err != nil {
 		return err

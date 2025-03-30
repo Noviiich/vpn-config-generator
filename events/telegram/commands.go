@@ -4,6 +4,8 @@ import (
 	"context"
 	"log"
 	"strings"
+
+	"github.com/Noviiich/vpn-config-generator/lib/e"
 )
 
 const (
@@ -32,7 +34,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	case GetUser:
 		return p.getUser(ctx, chatID, username)
 	case UserDelete:
-		return p.deleteUser(ctx, chatID, username)
+		return p.deleteUser(ctx, chatID)
 	// case VpnSub:
 	// 	return p.subscribe(ctx, chatID)
 	case HelpCmd:
@@ -90,9 +92,12 @@ func (p *Processor) sendHello(ctx context.Context, chatID int, username string) 
 // 	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
 // }
 
-func (p *Processor) deleteUser(ctx context.Context, chatID int, username string) error {
-	err := p.service.DeleteUser(ctx, chatID, username)
+func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
+	err := p.service.DeleteUser(ctx, chatID)
 	if err != nil {
+		if err == e.ErrUserNotFound {
+			return p.tg.SendMessage(ctx, chatID, msgErrorDeleteUser)
+		}
 		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
@@ -110,9 +115,9 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 }
 
 func (p *Processor) getUser(ctx context.Context, chatID int, username string) error {
-	user, err := p.service.GetUser(ctx, chatID, username)
+	user, err := p.service.GetUser(ctx, chatID)
 	if user == nil {
-		return p.tg.SendMessage(ctx, chatID, err.Error())
+		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
 	}
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, "ошибка при удалении пользователя")

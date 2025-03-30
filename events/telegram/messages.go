@@ -20,6 +20,7 @@ const (
 	msgNoSubscription    = `Вы не подписаны на рассылку конфигураций WireGuard
 Не расстраивайтесь, выполните команду /subscribe`
 	msgErrorDeleteUser = "Ошибка при удалении пользователя"
+	msgUserNotFound    = "пользователя не существует"
 	msgErrorGetUsers   = "Ошибка при получении списка пользователей"
 	msgNoUsers         = "Список пользователей пуст"
 )

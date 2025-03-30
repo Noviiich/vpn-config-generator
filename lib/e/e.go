@@ -1,6 +1,11 @@
 package e
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+var ErrUserNotFound = errors.New("пользователя не существует")
 
 func Wrap(msg string, err error) error {
 	return fmt.Errorf("%s: %w", msg, err)
