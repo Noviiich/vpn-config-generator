@@ -4,19 +4,18 @@ import (
 	"context"
 	"log"
 	"strings"
-
-	"github.com/Noviiich/vpn-config-generator/lib/e"
 )
 
 const (
-	HelpCmd    = "/help"
-	StartCmd   = "/start"
-	WGVpnCmd   = "/wireguard"
-	VpnStatus  = "/status"
-	VpnSub     = "/subscribe"
-	UserDelete = "/userdelete"
-	GetUsers   = "/getusers"
-	GetUser    = "/getuser"
+	HelpCmd            = "/help"
+	StartCmd           = "/start"
+	WGVpnCmd           = "/wireguard"
+	StatusSubscription = "/status"
+	Subscribe          = "/subscribe"
+	DeleteSubscription = "/deletesub"
+	UserDelete         = "/userdelete"
+	GetUsers           = "/getusers"
+	GetUser            = "/getuser"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -27,16 +26,18 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	switch text {
 	// case WGVpnCmd:
 	// 	return p.getConfig(ctx, chatID, username)
-	// case VpnStatus:
-	// 	return p.getStatusSubscription(ctx, chatID, username)
 	case GetUsers:
 		return p.getUsers(ctx, chatID)
 	case GetUser:
 		return p.getUser(ctx, chatID)
 	case UserDelete:
 		return p.deleteUser(ctx, chatID)
-	// case VpnSub:
-	// 	return p.subscribe(ctx, chatID)
+	case StatusSubscription:
+		return p.checkSubscription(ctx, chatID)
+	case Subscribe:
+		return p.subscribe(ctx, chatID)
+	case DeleteSubscription:
+		return p.deleteSubscription(ctx, chatID)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -84,21 +85,26 @@ func (p *Processor) sendHello(ctx context.Context, chatID int, username string) 
 // 	return p.tg.SendMessage(ctx, chatID, msg)
 // }
 
-// func (p *Processor) subscribe(ctx context.Context, chatID int) error {
-// 	err := p.service.UpdateSubscription(ctx, chatID)
-// 	if err != nil {
-// 		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
-// 	}
-// 	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
-// }
+func (p *Processor) subscribe(ctx context.Context, chatID int) error {
+	err := p.service.ActivateSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
+}
+
+func (p *Processor) deleteSubscription(ctx context.Context, chatID int) error {
+	err := p.service.DeactivateSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, "подписка удалена")
+}
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 	err := p.service.DeleteUser(ctx, chatID)
 	if err != nil {
-		if err == e.ErrUserNotFound {
-			return p.tg.SendMessage(ctx, chatID, msgUserNotFound)
-		}
-		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
+		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
 }
@@ -106,10 +112,7 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 	users, err := p.service.GetUsers(ctx)
 	if err != nil {
-		if err == e.ErrUserNotFound {
-			return p.tg.SendMessage(ctx, chatID, msgUsersNotFound)
-		}
-		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
+		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, users)
 }
@@ -117,10 +120,16 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 func (p *Processor) getUser(ctx context.Context, chatID int) error {
 	user, err := p.service.GetUser(ctx, chatID)
 	if err != nil {
-		if err == e.ErrUserNotFound {
-			return p.tg.SendMessage(ctx, chatID, msgUserNotFound)
-		}
-		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
+		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, user.Username)
+}
+
+func (p *Processor) checkSubscription(ctx context.Context, chatID int) error {
+	msg, err := p.service.CheckSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+
+	return p.tg.SendMessage(ctx, chatID, msg)
 }

@@ -2,8 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
-	"errors"
 
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
@@ -39,9 +37,6 @@ func (s *Storage) GetUser(ctx context.Context, telegramID int) (*storage.User, e
 
 	var user storage.User
 	err := s.db.GetContext(ctx, &user, query, telegramID)
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, nil
-	}
 	if err != nil {
 		return nil, err
 	}

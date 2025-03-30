@@ -13,15 +13,11 @@ const (
 
 const (
 	msgErrorUnknown      = "Неизвестная ошибка"
-	msgErrorGetStatus    = "Ошибка при получении статуса подписки"
-	msgErrorSubscribe    = "Ошибка при подписке"
 	msgErrorGetConfig    = "Ошибка при получении конфигурации"
 	msgErrorSendDocument = "Ошибка при отправке файла"
-	msgNoSubscription    = `Вы не подписаны на рассылку конфигураций WireGuard
-Не расстраивайтесь, выполните команду /subscribe`
-	msgErrorDeleteUser = "Ошибка при удалении пользователя"
-	msgUserNotFound    = "пользователя не существует"
-	msgUsersNotFound   = "пользователей не существует"
-	msgErrorGetUsers   = "Ошибка при получении списка пользователей"
-	msgNoUsers         = "Список пользователей пуст"
+	msgErrorDeleteUser   = "Ошибка при удалении пользователя"
+	msgUserNotFound      = "пользователя не существует"
+	msgUsersNotFound     = "пользователей не существует"
+	msgErrorGetUsers     = "Ошибка при получении списка пользователей"
+	msgNoUsers           = "Список пользователей пуст"
 )

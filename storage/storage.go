@@ -64,16 +64,16 @@ type IPAddress struct {
 }
 
 type SubscriptionType struct {
-	ID         int
-	Name       string
+	ID         int    `db:"id"`
+	Name       string `db:"name"`
 	Duration   time.Duration
 	MaxDevices int
 }
 
 type Subscription struct {
-	UserID     int `db:"user_id"`
-	TypeID     int
-	IsActive   bool `db:"is_active"`
-	StartDate  time.Time
+	UserID     int       `db:"user_id"`
+	TypeID     int       `db:"type_id"`
+	IsActive   bool      `db:"is_active"`
+	StartDate  time.Time `db:"start_date"`
 	ExpiryDate time.Time `db:"expiry_date"`
 }

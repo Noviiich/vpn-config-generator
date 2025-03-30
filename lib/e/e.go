@@ -6,8 +6,10 @@ import (
 )
 
 var (
-	ErrUserNotFound  = errors.New("пользователя не существует")
-	ErrUsersNotFound = errors.New("пользователей не существует")
+	ErrUserNotFound        = errors.New("пользователя не существует")
+	ErrUsersNotFound       = errors.New("пользователей не существует")
+	ErrNotFound            = errors.New("неизвестная ошибка")
+	ErrSubscriptionExpired = errors.New("ваша подписка истекла")
 )
 
 func Wrap(msg string, err error) error {

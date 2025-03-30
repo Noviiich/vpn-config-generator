@@ -13,8 +13,10 @@ func (s *Storage) ActivateSubscription(ctx context.Context, userID, typeID int) 
 		return err
 	}
 	query := `
-		INSERT INTO subscriptions (user_id, type_id, is_active)
-		VALUES ($1, $2, TRUE)
+		INSERT INTO subscriptions (user_id, type_id, is_active, expiry_date)
+		VALUES ($1, $2, TRUE,
+		NOW() + (SELECT duration FROM subscription_types WHERE id = $2)
+		)
 		ON CONFLICT (user_id) 
 		DO UPDATE SET
 			type_id = EXCLUDED.type_id,
@@ -38,7 +40,7 @@ func (s *Storage) DeactivateSubscription(ctx context.Context, userID int) error 
 	if err != nil {
 		return err
 	}
-	query := `UPDATE subscription
+	query := `UPDATE subscriptions
 			  SET 
 			  	is_active = FALSE,
 				expiry_date = GREATEST(NOW(), expiry_date)
@@ -73,5 +75,5 @@ func (s *Storage) CheckSubscription(ctx context.Context, userID int) (*storage.S
 		return nil, err
 	}
 
-	return &sub, err
+	return &sub, nil
 }

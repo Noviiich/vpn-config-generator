@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 	"strings"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
@@ -11,10 +13,10 @@ import (
 func (s *VPNService) GetUser(ctx context.Context, chatID int) (user *storage.User, err error) {
 	user, err = s.repo.GetUser(ctx, chatID)
 	if err != nil {
-		return nil, e.Wrap("service: can't get user", err)
-	}
-	if user == nil {
-		return nil, e.ErrUserNotFound
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, e.ErrUserNotFound
+		}
+		return nil, e.ErrNotFound
 	}
 
 	return user, nil
@@ -27,7 +29,7 @@ func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int
 	}
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {
-		return e.Wrap("service:can't create new user", err)
+		return e.ErrNotFound
 	}
 
 	return nil
@@ -38,12 +40,9 @@ func (s *VPNService) DeleteUser(ctx context.Context, chatID int) error {
 	if err != nil {
 		return err
 	}
-	if user == nil {
-		return e.ErrUserNotFound
-	}
 	err = s.repo.DeleteUser(ctx, user.ID)
 	if err != nil {
-		return e.Wrap("service: can't delete user", err)
+		return e.ErrNotFound
 	}
 	return nil
 }
