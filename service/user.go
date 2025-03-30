@@ -9,28 +9,25 @@ import (
 )
 
 func (s *VPNService) GetUser(ctx context.Context, chatID int) (user *storage.User, err error) {
-	defer func() { err = e.WrapIfErr("can't get user", err) }()
-
 	user, err = s.repo.GetUser(ctx, chatID)
-	if user == nil {
-		return nil, nil
-	}
 	if err != nil {
-		return nil, err
+		return nil, e.Wrap("service: can't get user", err)
+	}
+	if user == nil {
+		return nil, e.ErrUserNotFound
 	}
 
 	return user, nil
 }
 
 func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int) (err error) {
-	defer func() { err = e.WrapIfErr("can't create new user", err) }()
 	user := &storage.User{
 		TelegramID: chatID,
 		Username:   username,
 	}
 
 	if err := s.repo.CreateUser(ctx, user); err != nil {
-		return err
+		return e.Wrap("service:can't create new user", err)
 	}
 
 	return nil
@@ -38,15 +35,15 @@ func (s *VPNService) CreateUser(ctx context.Context, username string, chatID int
 
 func (s *VPNService) DeleteUser(ctx context.Context, chatID int) error {
 	user, err := s.GetUser(ctx, chatID)
-	if user == nil {
-		return e.ErrUserNotFound
-	}
 	if err != nil {
 		return err
 	}
+	if user == nil {
+		return e.ErrUserNotFound
+	}
 	err = s.repo.DeleteUser(ctx, user.ID)
 	if err != nil {
-		return e.Wrap("can't delete user", err)
+		return e.Wrap("service: can't delete user", err)
 	}
 	return nil
 }
@@ -62,7 +59,10 @@ func (s *VPNService) isExistsUser(ctx context.Context, chatID int) (ex bool, err
 func (s *VPNService) GetUsers(ctx context.Context) (string, error) {
 	users, err := s.repo.GetUsers(ctx)
 	if err != nil {
-		return "", e.Wrap("can't get users", err)
+		return "", e.Wrap("service: can't get users", err)
+	}
+	if users == nil {
+		return "", e.ErrUsersNotFound
 	}
 
 	var usernames []string

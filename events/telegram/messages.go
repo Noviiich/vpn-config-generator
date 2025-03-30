@@ -12,7 +12,7 @@ const (
 )
 
 const (
-	msgErrorCreateUser   = "Ошибка при создании пользователя"
+	msgErrorUnknown      = "Неизвестная ошибка"
 	msgErrorGetStatus    = "Ошибка при получении статуса подписки"
 	msgErrorSubscribe    = "Ошибка при подписке"
 	msgErrorGetConfig    = "Ошибка при получении конфигурации"
@@ -21,6 +21,7 @@ const (
 Не расстраивайтесь, выполните команду /subscribe`
 	msgErrorDeleteUser = "Ошибка при удалении пользователя"
 	msgUserNotFound    = "пользователя не существует"
+	msgUsersNotFound   = "пользователей не существует"
 	msgErrorGetUsers   = "Ошибка при получении списка пользователей"
 	msgNoUsers         = "Список пользователей пуст"
 )

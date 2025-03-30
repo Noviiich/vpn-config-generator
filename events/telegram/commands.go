@@ -32,7 +32,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	case GetUsers:
 		return p.getUsers(ctx, chatID)
 	case GetUser:
-		return p.getUser(ctx, chatID, username)
+		return p.getUser(ctx, chatID)
 	case UserDelete:
 		return p.deleteUser(ctx, chatID)
 	// case VpnSub:
@@ -71,7 +71,7 @@ func (p *Processor) sendHelp(ctx context.Context, chatID int) error {
 func (p *Processor) sendHello(ctx context.Context, chatID int, username string) error {
 	err := p.service.CreateUser(ctx, username, chatID)
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, msgErrorCreateUser)
+		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
 	}
 	return p.tg.SendMessage(ctx, chatID, msgHello)
 }
@@ -96,9 +96,9 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 	err := p.service.DeleteUser(ctx, chatID)
 	if err != nil {
 		if err == e.ErrUserNotFound {
-			return p.tg.SendMessage(ctx, chatID, msgErrorDeleteUser)
+			return p.tg.SendMessage(ctx, chatID, msgUserNotFound)
 		}
-		return p.tg.SendMessage(ctx, chatID, err.Error())
+		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
 	}
 	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
 }
@@ -106,21 +106,21 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 	users, err := p.service.GetUsers(ctx)
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, err.Error())
-	}
-	if users == "" {
-		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
+		if err == e.ErrUserNotFound {
+			return p.tg.SendMessage(ctx, chatID, msgUsersNotFound)
+		}
+		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
 	}
 	return p.tg.SendMessage(ctx, chatID, users)
 }
 
-func (p *Processor) getUser(ctx context.Context, chatID int, username string) error {
+func (p *Processor) getUser(ctx context.Context, chatID int) error {
 	user, err := p.service.GetUser(ctx, chatID)
-	if user == nil {
-		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
-	}
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, "ошибка при удалении пользователя")
+		if err == e.ErrUserNotFound {
+			return p.tg.SendMessage(ctx, chatID, msgUserNotFound)
+		}
+		return p.tg.SendMessage(ctx, chatID, msgErrorUnknown)
 	}
 	return p.tg.SendMessage(ctx, chatID, user.Username)
 }

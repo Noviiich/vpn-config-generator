@@ -5,7 +5,10 @@ import (
 	"fmt"
 )
 
-var ErrUserNotFound = errors.New("пользователя не существует")
+var (
+	ErrUserNotFound  = errors.New("пользователя не существует")
+	ErrUsersNotFound = errors.New("пользователей не существует")
+)
 
 func Wrap(msg string, err error) error {
 	return fmt.Errorf("%s: %w", msg, err)
