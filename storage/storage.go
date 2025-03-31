@@ -9,6 +9,8 @@ type Storage interface {
 	Users
 	Devices
 	SubscriptionTypes
+	LastIPs
+	IPPool
 }
 
 type Users interface {
@@ -27,6 +29,8 @@ type Devices interface {
 }
 
 type IPPool interface {
+	GetIpIsNull(ctx context.Context) (*IPAddress, error)
+	CreateIP(ctx context.Context, IPAdderss *IPAddress) error
 }
 
 type SubscriptionTypes interface {
@@ -38,6 +42,11 @@ type SubscriptionTypes interface {
 type Subscriptions interface {
 }
 
+type LastIPs interface {
+	GetLastIP(ctx context.Context, subnet string) (*LastIP, error)
+	UpdateLastIP(ctx context.Context, newIP string, subnet string) error
+}
+
 type User struct {
 	ID         int       `db:"id"`
 	TelegramID int       `db:"telegram_id"`
@@ -47,27 +56,28 @@ type User struct {
 }
 
 type Device struct {
-	ID         string `db:"id"`
-	UserID     int    `db:"user_id"`
-	PrivateKey string `db:"private_key"`
-	PublicKey  string `db:"public_key"`
-	CreatedAt  time.Time
-	LastActive time.Time
-	IsActive   bool `db:"is_active"`
+	ID         string    `db:"id"`
+	UserID     int       `db:"user_id"`
+	TypeId     int       `db:"type_id"`
+	PrivateKey string    `db:"private_key"`
+	PublicKey  string    `db:"public_key"`
+	CreatedAt  time.Time `db:"created_at"`
+	LastActive time.Time `db:"last_active"`
+	IsActive   bool      `db:"is_active"`
 }
 
 type IPAddress struct {
-	ID          int
-	DeviceID    int
-	IP          string
-	IsAvailable bool
+	ID          int    `db:"id"`
+	DeviceID    int    `db:"device_id"`
+	IP          string `db:"ip"`
+	IsAvailable bool   `db:"is_available"`
 }
 
 type SubscriptionType struct {
-	ID         int    `db:"id"`
-	Name       string `db:"name"`
-	Duration   time.Duration
-	MaxDevices int
+	ID         int           `db:"id"`
+	Name       string        `db:"name"`
+	Duration   time.Duration `db:"duration"`
+	MaxDevices int           `db:"max_devices"`
 }
 
 type Subscription struct {
@@ -76,4 +86,9 @@ type Subscription struct {
 	IsActive   bool      `db:"is_active"`
 	StartDate  time.Time `db:"start_date"`
 	ExpiryDate time.Time `db:"expiry_date"`
+}
+
+type LastIP struct {
+	Subnet string `db:"subnet"`
+	IP     string `db:"ip"`
 }
