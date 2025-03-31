@@ -10,12 +10,13 @@ const (
 	HelpCmd            = "/help"
 	StartCmd           = "/start"
 	WGVpnCmd           = "/wireguard"
-	StatusSubscription = "/status"
-	Subscribe          = "/subscribe"
-	DeleteSubscription = "/deletesub"
 	UserDelete         = "/userdelete"
 	GetUsers           = "/getusers"
 	GetUser            = "/getuser"
+	StatusSubscription = "/status"
+	Subscribe          = "/subscribe"
+	DeleteSubscription = "/deletesub"
+	GetDevices         = "/getdevices"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -38,6 +39,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 		return p.subscribe(ctx, chatID)
 	case DeleteSubscription:
 		return p.deleteSubscription(ctx, chatID)
+	case GetDevices:
+		return p.getDevices(ctx, chatID)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -85,22 +88,6 @@ func (p *Processor) sendHello(ctx context.Context, chatID int, username string) 
 // 	return p.tg.SendMessage(ctx, chatID, msg)
 // }
 
-func (p *Processor) subscribe(ctx context.Context, chatID int) error {
-	err := p.service.ActivateSubscription(ctx, chatID)
-	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, err.Error())
-	}
-	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
-}
-
-func (p *Processor) deleteSubscription(ctx context.Context, chatID int) error {
-	err := p.service.DeactivateSubscription(ctx, chatID)
-	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, err.Error())
-	}
-	return p.tg.SendMessage(ctx, chatID, "подписка удалена")
-}
-
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 	err := p.service.DeleteUser(ctx, chatID)
 	if err != nil {
@@ -132,4 +119,28 @@ func (p *Processor) checkSubscription(ctx context.Context, chatID int) error {
 	}
 
 	return p.tg.SendMessage(ctx, chatID, msg)
+}
+
+func (p *Processor) subscribe(ctx context.Context, chatID int) error {
+	err := p.service.ActivateSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
+}
+
+func (p *Processor) deleteSubscription(ctx context.Context, chatID int) error {
+	err := p.service.DeactivateSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, "подписка удалена")
+}
+
+func (p *Processor) getDevices(ctx context.Context, chatID int) error {
+	devices, err := p.service.GetDevices(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, devices)
 }
