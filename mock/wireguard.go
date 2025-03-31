@@ -3,7 +3,7 @@ package mock
 import (
 	"fmt"
 
-	"github.com/Noviiich/vpn-config-generator/lib/e"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type WGMockManager struct {
@@ -18,7 +18,7 @@ func NewWGMockManager(configPath string) *WGMockManager {
 		configPath:       configPath,
 		PublicServerKey:  "public",
 		PrivateServerKey: "private",
-		IPAddrServer:     "ipAddr",
+		IPAddrServer:     "10.0.0.1",
 	}
 }
 
@@ -26,13 +26,13 @@ func (wg *WGMockManager) GetConfig(privateUserKey string, ipAddrUser string) (st
 	return wg.createUserConfig(privateUserKey, ipAddrUser), nil
 }
 
-func (wg *WGMockManager) GenerateConfig(privateUserKey string, publicUserKey string, ipAddrUser string) (string, error) {
-	err := wg.changeBaseConfig(publicUserKey, ipAddrUser)
+func (wg *WGMockManager) GenerateConfig(ipAddrUser string) (string, error) {
+	private, _, err := generateKeys()
 	if err != nil {
-		return "", fmt.Errorf("can't change base config: %v", err)
+		return "", err
 	}
 
-	return wg.createUserConfig(privateUserKey, ipAddrUser), nil
+	return wg.createUserConfig(private, ipAddrUser), nil
 }
 
 func (wg *WGMockManager) createUserConfig(privateUserKey string, ipAddrUser string) string {
@@ -49,11 +49,23 @@ PersistentKeepalive = 20`, privateUserKey, ipAddrUser, wg.PublicServerKey, wg.IP
 	return config
 }
 
-func (wg *WGMockManager) changeBaseConfig(userPublicKey, ipAddrUser string) (err error) {
-	defer func() { err = e.WrapIfErr("can't change base config", err) }()
-	// 	configEntry := fmt.Sprintf(`[Peer]
-	// PublicKey = %s
-	// AllowedIPs = %s\n`, userPublicKey, ipAddrUser)
+// func (wg *WGMockManager) changeBaseConfig(userPublicKey, ipAddrUser string) (err error) {
+// 	defer func() { err = e.WrapIfErr("can't change base config", err) }()
+// 	// 	configEntry := fmt.Sprintf(`[Peer]
+// 	// PublicKey = %s
+// 	// AllowedIPs = %s\n`, userPublicKey, ipAddrUser)
 
-	return nil
+// 	return nil
+// }
+
+func generateKeys() (string, string, error) {
+	key, err := wgtypes.GenerateKey()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate private key: %w", err)
+	}
+
+	private := key.String()
+	public := key.PublicKey().String()
+
+	return private, public, nil
 }
