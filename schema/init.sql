@@ -13,9 +13,17 @@ CREATE TABLE IF NOT EXISTS ip_pool (
     is_available BOOLEAN GENERATED ALWAYS AS (device_id IS NULL) STORED
 );
 
+CREATE TABLE IF NOT EXISTS device_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT NOT NULL, 
+    max_bandwidth INT DEFAULT 100000
+);
+
 CREATE TABLE IF NOT EXISTS devices (
     id SERIAL PRIMARY KEY,
     user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type_id INT REFERENCES device_types(id),
     private_key TEXT NOT NULL CHECK (length(private_key) > 10),
     public_key TEXT NOT NULL CHECK (length(public_key) > 10),
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
@@ -38,3 +46,12 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     expiry_date TIMESTAMP DEFAULT NULL,
     is_active BOOLEAN DEFAULT FALSE
 );
+
+CREATE TABLE IF NOT EXISTS last_ip (
+    id SERIAL PRIMARY KEY,
+    subnet CIDR NOT NULL UNIQUE,
+    ip INET NOT NULL UNIQUE
+);
+
+INSERT INTO last_ip (subnet, ip)
+VALUES (10.0.0.1, 10.0.0.2);
