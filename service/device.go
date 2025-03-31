@@ -1,53 +1,79 @@
 package service
 
-// func (s *VPNService) СreateDevice(ctx context.Context, userID int) (err error) {
-// 	defer func() { err = e.WrapIfErr("can't create device", err) }()
-// 	privateUserKey, publicUserKey, err := generateKey()
-// 	if err != nil {
-// 		return err
-// 	}
+import (
+	"context"
+	"database/sql"
+	"errors"
+	"fmt"
+	"log"
+	"strconv"
+	"strings"
+	"time"
 
-// 	ipUser, err := s.getNextIP(ctx)
-// 	if err != nil {
-// 		return err
-// 	}
+	"github.com/Noviiich/vpn-config-generator/lib/e"
+	"github.com/Noviiich/vpn-config-generator/storage"
+	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+)
 
-// 	device := &storage.Device{
-// 		UserID:     userID,
-// 		PrivateKey: privateUserKey,
-// 		PublicKey:  publicUserKey,
-// 		IP:         ipUser,
-// 		IsActive:   true,
-// 	}
-// 	if err := s.repo.CreateDevice(ctx, device); err != nil {
-// 		return err
-// 	}
+func (s *VPNService) СreateDevice(ctx context.Context, userID int, subnet string) (err error) {
+	// получение ip из вышедших, если они есть
+	ipAddress, err := s.repo.GetIpIsNull(ctx)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return err
+	}
 
-// 	return nil
-// }
+	var ipUser string
+	//если нет пустых ip из пула
+	if errors.Is(err, sql.ErrNoRows) {
+		//получение нового незадействованного ip
+		ipUser, err = s.getNextIP(ctx, subnet)
+		if err != nil {
+			return err
+		}
+	}  else {
+		ipUser = ipAddress.IP
+		s.repo.UpdateIpPool(ctx, ipAddress.ID)
+	}
 
-// func (s *VPNService) GetDevices(ctx context.Context, chatID int) (d []*storage.Device, err error) {
-// 	defer func() { err = e.WrapIfErr("can't get device", err) }()
+	private, public, err := generateKeys()
+	if err != nil {
+		return err
+	}
 
-// 	exists, err := s.isExistsDevice(ctx, chatID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	device := &storage.Device{
+		UserID:     userID,
+		TypeId:     1,
+		PrivateKey: private,
+		PublicKey:  public,
+		LastActive: time.Now(),
+		IsActive:   true,
+	}
+	if err := s.repo.CreateDevice(ctx, device); err != nil {
+		return err
+	}
 
-// 	if !exists {
-// 		err = s.СreateDevice(ctx, chatID)
-// 		if err != nil {
-// 			return nil, err
-// 		}
-// 	}
 
-// 	device, err := s.repo.GetDevice(ctx, chatID)
-// 	if err != nil {
-// 		return nil, err
-// 	}
 
-// 	return device, nil
-// }
+	return nil
+}
+
+func (s *VPNService) GetDevices(ctx context.Context, chatID int) (str string, err error) {
+	devices, err := s.repo.GetDevices(ctx, chatID)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", e.ErrDevicesNotFound
+		}
+		return "", err
+	}
+
+	var usernames []string
+	for _, device := range devices {
+		usernames = append(usernames, strconv.Itoa(device.TypeId))
+	}
+	result := strings.Join(usernames, "\n")
+	return result, nil
+}
 
 // func (s *VPNService) isExistsDevice(ctx context.Context, chatID int) (bool, error) {
 // 	exists, err := s.repo.IsExistsDevice(ctx, chatID)
@@ -56,3 +82,15 @@ package service
 // 	}
 // 	return exists, nil
 // }
+
+func generateKeys() (string, string, error) {
+	key, err := wgtypes.GenerateKey()
+	if err != nil {
+		return "", "", fmt.Errorf("failed to generate private key: %w", err)
+	}
+
+	private := key.String()
+	public := key.PublicKey().String()
+
+	return private, public, nil
+}
