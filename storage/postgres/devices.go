@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/Noviiich/vpn-config-generator/storage"
 )
@@ -37,9 +38,13 @@ func (s *Storage) GetDevices(ctx context.Context, userID int) ([]storage.Device,
               WHERE user_id = $1`
 
 	var devices []storage.Device
-	err := s.db.SelectContext(ctx, &devices, query)
+	err := s.db.SelectContext(ctx, &devices, query, userID)
 	if err != nil {
 		return nil, err
+	}
+
+	if devices == nil {
+		return nil, sql.ErrNoRows
 	}
 
 	return devices, nil
