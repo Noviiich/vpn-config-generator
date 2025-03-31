@@ -2,8 +2,6 @@ package mock
 
 import (
 	"fmt"
-
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
 type WGMockManager struct {
@@ -26,13 +24,9 @@ func (wg *WGMockManager) GetConfig(privateUserKey string, ipAddrUser string) (st
 	return wg.createUserConfig(privateUserKey, ipAddrUser), nil
 }
 
-func (wg *WGMockManager) GenerateConfig(ipAddrUser string) (string, error) {
-	private, _, err := generateKeys()
-	if err != nil {
-		return "", err
-	}
+func (wg *WGMockManager) GenerateConfig(privateUserKey string, publicUserKey string, ipAddrUser string) (string, error) {
 
-	return wg.createUserConfig(private, ipAddrUser), nil
+	return wg.createUserConfig(privateUserKey, ipAddrUser), nil
 }
 
 func (wg *WGMockManager) createUserConfig(privateUserKey string, ipAddrUser string) string {
@@ -57,15 +51,3 @@ PersistentKeepalive = 20`, privateUserKey, ipAddrUser, wg.PublicServerKey, wg.IP
 
 // 	return nil
 // }
-
-func generateKeys() (string, string, error) {
-	key, err := wgtypes.GenerateKey()
-	if err != nil {
-		return "", "", fmt.Errorf("failed to generate private key: %w", err)
-	}
-
-	private := key.String()
-	public := key.PublicKey().String()
-
-	return private, public, nil
-}
