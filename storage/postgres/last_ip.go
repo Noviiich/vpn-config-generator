@@ -19,7 +19,7 @@ func (s *Storage) GetLastIP(ctx context.Context, subnet string) (*storage.LastIP
 	return &last, nil
 }
 
-func (s *Storage) UpdateIP(ctx context.Context, newIP string, subnet string) error {
+func (s *Storage) UpdateLastIP(ctx context.Context, newIP string, subnet string) error {
 	query := `
 			UPDATE last_ip 
 			SET ip = $1
