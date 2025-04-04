@@ -7,6 +7,7 @@ import (
 
 type Storage interface {
 	Users
+	Subscriptions
 }
 
 type Users interface {
@@ -17,10 +18,17 @@ type Users interface {
 	GetUsers(ctx context.Context) ([]User, error)
 }
 
+type Subscriptions interface {
+	CreateSubscription(ctx context.Context, userID, typeID int) error
+	DeleteSubscription(ctx context.Context, userID int) error
+	GetSubscription(ctx context.Context, userID int) (*Subscription, error)
+	GetSubscriptions(ctx context.Context, userID int) ([]Subscription, error)
+}
+
 type User struct {
-	ID         int
-	TelegramID int
-	Username   string
+	ID         int    `db:"id"`
+	TelegramID int    `db:"telegram_id"`
+	Username   string `db:"username"`
 }
 
 type SubscriptionType struct {
@@ -31,6 +39,7 @@ type SubscriptionType struct {
 }
 
 type Subscription struct {
+	ID         int       `db:"id"`
 	UserID     int       `db:"user_id"`
 	TypeID     int       `db:"type_id"`
 	IsActive   bool      `db:"is_active"`
@@ -44,8 +53,8 @@ type ActionType struct {
 }
 
 type Action struct {
-	ID        int
-	ActionID  int
-	UserID    int
-	CreatedAt time.Time
+	ID        int       `db:"id"`
+	ActionID  int       `db:"action_id"`
+	UserID    int       `db:"user_id"`
+	CreatedAt time.Time `db:"created_at"`
 }

@@ -53,7 +53,7 @@ func (s *VPNService) GetUsers(ctx context.Context) (string, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return "", e.ErrUserNotFound
 		}
-		return "", e.ErrNotFound
+		return "", err
 	}
 
 	var usernames []string

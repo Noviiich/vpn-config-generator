@@ -11,9 +11,13 @@ CREATE TABLE IF NOT EXISTS subscription_types (
     max_devices INT NOT NULL
 );
 
+INSERT INTO subscription_types (name, duration, max_devices)
+VALUES ('basic', INTERVAL '30 days', 3);
+
+
 CREATE TABLE IF NOT EXISTS subscriptions (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+    user_id BIGINT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
     type_id INT NOT NULL REFERENCES subscription_types(id),
     expiry_date TIMESTAMP NOT NULL
 );

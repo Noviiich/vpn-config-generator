@@ -9,6 +9,7 @@ import (
 	"github.com/Noviiich/vpn-config-generator/internal/bot/events/telegram"
 	"github.com/Noviiich/vpn-config-generator/internal/master/service"
 	"github.com/Noviiich/vpn-config-generator/internal/master/storage/postgres"
+	_ "github.com/lib/pq"
 )
 
 const (

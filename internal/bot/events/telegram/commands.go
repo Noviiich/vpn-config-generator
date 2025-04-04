@@ -4,17 +4,18 @@ import (
 	"context"
 	"log"
 	"strings"
-
 )
 
 const (
-	HelpCmd    = "/help"
-	StartCmd   = "/start"
-	WGVpnCmd   = "/wireguard"
-	VpnStatus  = "/status"
-	VpnSub     = "/subscribe"
-	UserDelete = "/userdelete"
-	GetUsers   = "/getusers"
+	HelpCmd            = "/help"
+	StartCmd           = "/start"
+	WGVpnCmd           = "/wireguard"
+	VpnStatus          = "/status"
+	VpnSub             = "/subscribe"
+	UserDelete         = "/userdelete"
+	GetUsers           = "/getusers"
+	DeleteSubscription = "/deletesub"
+	CreateWireguard    = "/wg"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -25,14 +26,16 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	switch text {
 	// case WGVpnCmd:
 	// 	return p.getConfig(ctx, chatID, username)
-	// case VpnStatus:
-	// 	return p.getStatusSubscription(ctx, chatID, username)
+	case VpnStatus:
+		return p.getSubscription(ctx, chatID)
+	case DeleteSubscription:
+		return p.DeleteSubscription(ctx, chatID)
 	case GetUsers:
 		return p.getUsers(ctx, chatID)
 	case UserDelete:
 		return p.deleteUser(ctx, chatID)
-	// case VpnSub:
-	// 	return p.subscribe(ctx, chatID)
+	case VpnSub:
+		return p.subscribe(ctx, chatID)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -72,26 +75,26 @@ func (p *Processor) sendHello(ctx context.Context, chatID int, username string) 
 	return p.tg.SendMessage(ctx, chatID, msgHello)
 }
 
-// func (p *Processor) getStatusSubscription(ctx context.Context, chatID int, username string) (err error) {
-// 	msg, err := p.db.StatusSubscribtion(ctx, username, chatID)
-// 	if err != nil {
-// 		return p.tg.SendMessage(ctx, chatID, msgErrorGetStatus)
-// 	}
-// 	return p.tg.SendMessage(ctx, chatID, msg)
-// }
+func (p *Processor) getSubscription(ctx context.Context, chatID int) (err error) {
+	msg, err := p.service.GetSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, msg)
+}
 
-// func (p *Processor) subscribe(ctx context.Context, chatID int) error {
-// 	err := p.db.UpdateSubscription(ctx, chatID)
-// 	if err != nil {
-// 		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
-// 	}
-// 	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
-// }
+func (p *Processor) subscribe(ctx context.Context, chatID int) error {
+	err := p.service.CreateSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
+}
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 	err := p.service.DeleteUser(ctx, chatID)
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, msgErrorDeleteUser)
+		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, msgDeleteUser)
 }
@@ -99,10 +102,23 @@ func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
 func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 	users, err := p.service.GetUsers(ctx)
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, msgErrorGetUsers)
-	}
-	if users == "" {
-		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
+		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
 	return p.tg.SendMessage(ctx, chatID, users)
+}
+
+func (p *Processor) DeleteSubscription(ctx context.Context, chatID int) error {
+	err := p.service.DeleteSubscription(ctx, chatID)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendMessage(ctx, chatID, msgDeleteSubscription)
+}
+
+func (p *Processor) CreateWireguard(ctx context.Context, chatID int) error {
+	wgConf, err := p.service.GetUsers(ctx)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+	return p.tg.SendDocument(ctx, chatID, wgConf, "WG_NOV.conf")
 }

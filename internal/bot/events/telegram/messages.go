@@ -5,10 +5,11 @@ const msgHelp = `Отправьте /wireguard чтобы получить ко�
 const msgHello = "Hi there! 👾\n\n" + msgHelp
 
 const (
-	msgUnknownCommand = "Unknown command 🤔"
-	msgAlreadyExists  = "You have already have this page in your list 🤗"
-	msgDeleteUser     = "Вы успешно удалили пользователя"
-	msgSubscribe      = "Вы успешно подписались на рассылку конфигураций WireGuard"
+	msgUnknownCommand     = "Unknown command 🤔"
+	msgAlreadyExists      = "You have already have this page in your list 🤗"
+	msgDeleteUser         = "Вы успешно удалили пользователя"
+	msgSubscribe          = "Вы успешно подписались на рассылку конфигураций WireGuard"
+	msgDeleteSubscription = `Ваша подписка удалена`
 )
 
 const (
