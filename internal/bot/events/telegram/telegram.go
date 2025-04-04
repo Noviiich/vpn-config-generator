@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Noviiich/vpn-config-generator/clients/telegram"
-	"github.com/Noviiich/vpn-config-generator/events"
+	"github.com/Noviiich/vpn-config-generator/internal/bot/clients/telegram"
+	"github.com/Noviiich/vpn-config-generator/internal/bot/events"
+	"github.com/Noviiich/vpn-config-generator/internal/master/service"
 	"github.com/Noviiich/vpn-config-generator/lib/e"
-	"github.com/Noviiich/vpn-config-generator/service"
 )
 
 type Processor struct {

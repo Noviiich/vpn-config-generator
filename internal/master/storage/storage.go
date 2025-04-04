@@ -6,33 +6,46 @@ import (
 )
 
 type Storage interface {
-	InitDB(ctx context.Context)
-	CreateDevice(ctx context.Context, device *Device) error
-	GetUser(ctx context.Context, telegramID int) (*User, error)
-	UpdateUser(ctx context.Context, user *User) error
+	Users
+}
+
+type Users interface {
 	CreateUser(ctx context.Context, user *User) error
-	DeleteUser(ctx context.Context, telegramID int) error
-	IsExistsUser(ctx context.Context, telegramID int) (bool, error)
-	GetIP(ctx context.Context) (string, error)
-	UpdateIP(ctx context.Context, newIP string) error
-	GetDevice(ctx context.Context, telegramID int) (*Device, error)
-	IsExistsDevice(ctx context.Context, telegramID int) (bool, error)
-	GetUsers(ctx context.Context, telegramID int) ([]string, error)
+	GetUser(ctx context.Context, id int) (*User, error)
+	UpdateUser(ctx context.Context, user *User) error
+	DeleteUser(ctx context.Context, id int) error
+	GetUsers(ctx context.Context) ([]User, error)
 }
 
 type User struct {
-	TelegramID         int
-	Username           string
-	Devices            []Device
-	SubscriptionActive bool
-	SubscriptionExpiry time.Time
+	ID         int
+	TelegramID int
+	Username   string
 }
 
-type Device struct {
-	ID         string
-	UserID     int
-	PrivateKey string
-	PublicKey  string
-	IP         string
-	IsActive   bool
+type SubscriptionType struct {
+	ID         int           `db:"id"`
+	Name       string        `db:"name"`
+	Duration   time.Duration `db:"duration"`
+	MaxDevices int           `db:"max_devices"`
+}
+
+type Subscription struct {
+	UserID     int       `db:"user_id"`
+	TypeID     int       `db:"type_id"`
+	IsActive   bool      `db:"is_active"`
+	StartDate  time.Time `db:"start_date"`
+	ExpiryDate time.Time `db:"expiry_date"`
+}
+
+type ActionType struct {
+	ID   int    `db:"id"`
+	Name string `db:"name"`
+}
+
+type Action struct {
+	ID        int
+	ActionID  int
+	UserID    int
+	CreatedAt time.Time
 }

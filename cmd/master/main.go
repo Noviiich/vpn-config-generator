@@ -1,16 +1,14 @@
 package main
 
 import (
-	"context"
 	"log"
 
-	tgClient "github.com/Noviiich/vpn-config-generator/clients/telegram"
-	"github.com/Noviiich/vpn-config-generator/config"
-	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
-	"github.com/Noviiich/vpn-config-generator/events/telegram"
-	"github.com/Noviiich/vpn-config-generator/service"
-	"github.com/Noviiich/vpn-config-generator/storage/postgres"
-	"github.com/Noviiich/vpn-config-generator/vpnconfig/wireguard"
+	config "github.com/Noviiich/vpn-config-generator/configs"
+	tgClient "github.com/Noviiich/vpn-config-generator/internal/bot/clients/telegram"
+	event_consumer "github.com/Noviiich/vpn-config-generator/internal/bot/consumer/event-consumer"
+	"github.com/Noviiich/vpn-config-generator/internal/bot/events/telegram"
+	"github.com/Noviiich/vpn-config-generator/internal/master/service"
+	"github.com/Noviiich/vpn-config-generator/internal/master/storage/postgres"
 )
 
 const (
@@ -20,30 +18,8 @@ const (
 
 func main() {
 	cfg := config.Load()
-	// service := service.NewWGManager("/etc/wireguard/wg0.conf")
-	// private, public, err := service.GenerateKey()
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// err = service.AddClient(public, "10.0.0.2")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// config := service.GenerateConfig(private, "10.0.0.2")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Println(config)
-	// client := api.NewTimeWebClient("/api/v1", "api.timeweb.cloud", cfg.ServerToken)
-	// bodyText, err := client.ServerInfo(context.Background(), "4383899")
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
-	// fmt.Printf("%s\n", bodyText)
 	repo := postgres.New("novich", "novich", "vpndb")
-	repo.InitDB(context.Background())
-	vpnConfig := wireguard.NewWGManager("/etc/wireguard/wg0.conf")
-	vpnService := service.NewVPNService(vpnConfig, repo)
+	vpnService := service.NewVPNService(repo)
 
 	eventsProcessor := telegram.New(
 		tgClient.New(tgBotHost, cfg.TgBotToken),
@@ -54,6 +30,6 @@ func main() {
 
 	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
 	if err := consumer.Start(); err != nil {
-		log.Fatal("service is stopped", err)
+		log.Fatalf("неисправная ошибка: %v", err)
 	}
 }

@@ -18,9 +18,14 @@ CREATE TABLE IF NOT EXISTS subscriptions (
     expiry_date TIMESTAMP NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS action_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS actions (
     id SERIAL PRIMARY KEY,
-    action INT NOT NULL,
+    action_id INT NOT NULL REFERENCES action_types(id),
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );

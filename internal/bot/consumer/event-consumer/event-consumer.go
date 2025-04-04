@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/Noviiich/vpn-config-generator/events"
+	"github.com/Noviiich/vpn-config-generator/internal/bot/events"
 )
 
 type Consumer struct {
