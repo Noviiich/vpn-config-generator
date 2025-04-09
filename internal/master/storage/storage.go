@@ -8,6 +8,7 @@ import (
 type Storage interface {
 	Users
 	Subscriptions
+	Actions
 }
 
 type Users interface {
@@ -23,6 +24,11 @@ type Subscriptions interface {
 	DeleteSubscription(ctx context.Context, userID int) error
 	GetSubscription(ctx context.Context, userID int) (*Subscription, error)
 	GetSubscriptions(ctx context.Context, userID int) ([]Subscription, error)
+}
+
+type Actions interface {
+	CreateAction(ctx context.Context, action *Action) error
+	GetActions(ctx context.Context, telegramID int) ([]Action, error)
 }
 
 type User struct {

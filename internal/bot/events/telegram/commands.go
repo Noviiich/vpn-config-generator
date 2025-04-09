@@ -28,6 +28,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	// 	return p.getConfig(ctx, chatID, username)
 	case VpnStatus:
 		return p.getSubscription(ctx, chatID)
+	case CreateWireguard:
+		return p.createWireguard(ctx, chatID)
 	case DeleteSubscription:
 		return p.DeleteSubscription(ctx, chatID)
 	case GetUsers:
@@ -84,7 +86,7 @@ func (p *Processor) getSubscription(ctx context.Context, chatID int) (err error)
 }
 
 func (p *Processor) subscribe(ctx context.Context, chatID int) error {
-	err := p.service.CreateSubscription(ctx, chatID)
+	err := p.service.CreateSubscription(ctx, chatID, 1)
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
@@ -115,10 +117,10 @@ func (p *Processor) DeleteSubscription(ctx context.Context, chatID int) error {
 	return p.tg.SendMessage(ctx, chatID, msgDeleteSubscription)
 }
 
-func (p *Processor) CreateWireguard(ctx context.Context, chatID int) error {
-	wgConf, err := p.service.GetUsers(ctx)
+func (p *Processor) createWireguard(ctx context.Context, chatID int) error {
+	err := p.service.CreateAction(ctx, chatID, 1)
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, err.Error())
 	}
-	return p.tg.SendDocument(ctx, chatID, wgConf, "WG_NOV.conf")
+	return p.tg.SendMessage(ctx, chatID, msgCrateConfig)
 }

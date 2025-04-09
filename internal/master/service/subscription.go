@@ -18,13 +18,13 @@ const (
 Она истекает через %d дней, %d часов`
 )
 
-func (s *VPNService) CreateSubscription(ctx context.Context, chatID int) (err error) {
+func (s *VPNService) CreateSubscription(ctx context.Context, chatID int, typeID int) (err error) {
 	user, err := s.GetUser(ctx, chatID)
 	if err != nil {
 		return err
 	}
 
-	err = s.db.CreateSubscription(ctx, user.ID, 1)
+	err = s.db.CreateSubscription(ctx, user.ID, typeID)
 	if err != nil {
 		return e.ErrNotFound
 	}

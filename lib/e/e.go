@@ -11,6 +11,7 @@ var (
 	ErrNotFound            = errors.New("неизвестная ошибка")
 	ErrSubscriptionExpired = errors.New("ваша подписка истекла")
 	ErrDevicesNotFound     = errors.New("у вас нет конфигураций")
+	ErrActionsNotFound     = errors.New("нет никаких событий")
 )
 
 func Wrap(msg string, err error) error {

@@ -10,6 +10,7 @@ const (
 	msgDeleteUser         = "Вы успешно удалили пользователя"
 	msgSubscribe          = "Вы успешно подписались на рассылку конфигураций WireGuard"
 	msgDeleteSubscription = `Ваша подписка удалена`
+	msgCrateConfig        = "ВЫ УСПЕШНО СОЗДАЛИ КОНФИГ"
 )
 
 const (

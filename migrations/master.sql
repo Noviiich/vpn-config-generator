@@ -27,6 +27,11 @@ CREATE TABLE IF NOT EXISTS action_types (
     name TEXT UNIQUE NOT NULL
 );
 
+INSERT INTO action_types (name)
+VALUES 
+    ('create'),
+    ('delete');
+
 CREATE TABLE IF NOT EXISTS actions (
     id SERIAL PRIMARY KEY,
     action_id INT NOT NULL REFERENCES action_types(id),
