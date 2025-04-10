@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"time"
 
 	"github.com/Noviiich/vpn-config-generator/internal/master/storage"
 )
@@ -25,13 +26,33 @@ func (s *Storage) CreateAction(ctx context.Context, action *storage.Action) erro
 	return tx.Commit()
 }
 
-func (s *Storage) GetActions(ctx context.Context, telegramID int) ([]storage.Action, error) {
+func (s *Storage) GetActions(ctx context.Context) ([]storage.Action, error) {
 	query := `
 			SELECT *
 			FROM actions`
 
 	var actions []storage.Action
 	err := s.db.SelectContext(ctx, &actions, query)
+	if err != nil {
+		return nil, err
+	}
+
+	if actions == nil {
+		return nil, sql.ErrNoRows
+	}
+
+	return actions, nil
+}
+
+func (s *Storage) GetActionsByTime(ctx context.Context, since time.Time) ([]storage.Action, error) {
+	query := `
+			SELECT *
+			FROM actions
+			WHERE created_at >= $1
+        	ORDER BY created_at`
+
+	var actions []storage.Action
+	err := s.db.SelectContext(ctx, &actions, query, since)
 	if err != nil {
 		return nil, err
 	}

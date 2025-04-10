@@ -28,7 +28,8 @@ type Subscriptions interface {
 
 type Actions interface {
 	CreateAction(ctx context.Context, action *Action) error
-	GetActions(ctx context.Context, telegramID int) ([]Action, error)
+	GetActions(ctx context.Context) ([]Action, error)
+	GetActionsByTime(ctx context.Context, since time.Time) ([]Action, error)
 }
 
 type User struct {
