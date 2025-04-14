@@ -38,3 +38,17 @@ CREATE TABLE IF NOT EXISTS actions (
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+//подумай
+CREATE TABLE IF NOT EXISTS device_types (
+    id SERIAL PRIMARY KEY,
+    name TEXT UNIQUE NOT NULL,
+    description TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS devices (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    device_id INT REFERENCES device_types(id),
+    private_key TEXT NOT NULL,
+    public_key TEXT NOT NULL
+);
