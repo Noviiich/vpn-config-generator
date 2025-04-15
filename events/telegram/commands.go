@@ -86,7 +86,7 @@ func (p *Processor) subscribe(ctx context.Context, chatID int) error {
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
 	}
-	return p.tg.SendMessage(ctx, chatID, msgSubscribe)
+	// return p.tg.SendAdminSubscriptionRequest(ctx, )
 }
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {

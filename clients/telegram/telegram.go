@@ -162,3 +162,47 @@ func (c *Client) doRequestDocument(ctx context.Context, method string, body io.R
 
 	return res, nil
 }
+
+// func (c *Client) SendAdminSubscriptionRequest(ctx context.Context, adminID int, text string, userID int) error {
+// 	keyboard := InlineKeyboardMarkup{
+// 		InlineKeyboard: [][]InlineKeyboardButton{
+// 			{
+// 				{
+// 					Text:         "✅ Одобрить",
+// 					CallbackData: "approve_" + strconv.Itoa(userID),
+// 				},
+// 				{
+// 					Text:         "❌ Отклонить",
+// 					CallbackData: "reject_" + strconv.Itoa(userID),
+// 				},
+// 			},
+// 		},
+// 	}
+
+// 	keyboardJSON, err := json.Marshal(keyboard)
+// 	if err != nil {
+// 		return e.Wrap("can't marshal keyboard", err)
+// 	}
+
+// 	q := url.Values{}
+// 	q.Add("chat_id", strconv.Itoa(adminID))
+// 	q.Add("text", text)
+// 	q.Add("reply_markup", string(keyboardJSON))
+
+// 	_, err = c.doRequest(ctx, sendMessageMethod, q)
+// 	if err != nil {
+// 		return e.Wrap("can't send admin notification", err)
+// 	}
+
+// 	return nil
+// }
+
+// func (c *Client) NotifyUserSubscriptionApproved(ctx context.Context, chatID int) error {
+// 	text := "✅ Ваша заявка на подписку одобрена! Теперь вы можете использовать VPN."
+// 	return c.SendMessage(ctx, chatID, text)
+// }
+
+// func (c *Client) NotifyUserSubscriptionRejected(ctx context.Context, chatID int) error {
+// 	text := "❌ К сожалению, ваша заявка на подписку отклонена. Пожалуйста, свяжитесь с администратором для получения дополнительной информации."
+// 	return c.SendMessage(ctx, chatID, text)
+// }
