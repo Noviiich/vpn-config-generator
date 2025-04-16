@@ -19,6 +19,7 @@ type Client struct {
 	host     string
 	basePath string
 	client   http.Client
+	adminID  int
 }
 
 const (
@@ -27,11 +28,12 @@ const (
 	sendDocumentMethod = "sendDocument"
 )
 
-func New(host string, token string) *Client {
+func New(host string, token string, adminID int) *Client {
 	return &Client{
 		host:     host,
 		basePath: newBasePath(token),
 		client:   http.Client{},
+		adminID:  adminID,
 	}
 }
 
@@ -163,39 +165,44 @@ func (c *Client) doRequestDocument(ctx context.Context, method string, body io.R
 	return res, nil
 }
 
-// func (c *Client) SendAdminSubscriptionRequest(ctx context.Context, adminID int, text string, userID int) error {
-// 	keyboard := InlineKeyboardMarkup{
-// 		InlineKeyboard: [][]InlineKeyboardButton{
-// 			{
-// 				{
-// 					Text:         "✅ Одобрить",
-// 					CallbackData: "approve_" + strconv.Itoa(userID),
-// 				},
-// 				{
-// 					Text:         "❌ Отклонить",
-// 					CallbackData: "reject_" + strconv.Itoa(userID),
-// 				},
-// 			},
-// 		},
-// 	}
+func (c *Client) SendApprovalButtons(ctx context.Context, text string) (err error) {
+	defer func() { err = e.WrapIfErr("can't send approval buttons", err) }()
 
-// 	keyboardJSON, err := json.Marshal(keyboard)
-// 	if err != nil {
-// 		return e.Wrap("can't marshal keyboard", err)
-// 	}
+	// Создаем структуру для inline-клавиатуры
+	replyMarkup := map[string]interface{}{
+		"inline_keyboard": [][]map[string]interface{}{
+			{
+				{
+					"text":          "Одобрить",
+					"callback_data": "approve",
+				},
+				{
+					"text":          "Отклонить",
+					"callback_data": "reject",
+				},
+			},
+		},
+	}
 
-// 	q := url.Values{}
-// 	q.Add("chat_id", strconv.Itoa(adminID))
-// 	q.Add("text", text)
-// 	q.Add("reply_markup", string(keyboardJSON))
+	// Сериализуем клавиатуру в JSON
+	markupJSON, err := json.Marshal(replyMarkup)
+	if err != nil {
+		return err
+	}
 
-// 	_, err = c.doRequest(ctx, sendMessageMethod, q)
-// 	if err != nil {
-// 		return e.Wrap("can't send admin notification", err)
-// 	}
+	// Формируем параметры запроса
+	formData := url.Values{}
+	formData.Set("chat_id", strconv.Itoa(c.adminID))
+	formData.Set("text", text)
+	formData.Set("reply_markup", string(markupJSON))
 
-// 	return nil
-// }
+	_, err = c.doRequest(ctx, sendMessageMethod, formData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // func (c *Client) NotifyUserSubscriptionApproved(ctx context.Context, chatID int) error {
 // 	text := "✅ Ваша заявка на подписку одобрена! Теперь вы можете использовать VPN."

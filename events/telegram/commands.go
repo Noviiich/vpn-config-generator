@@ -86,7 +86,11 @@ func (p *Processor) subscribe(ctx context.Context, chatID int) error {
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
 	}
-	// return p.tg.SendAdminSubscriptionRequest(ctx, )
+	err = p.tg.SendMessage(ctx, chatID, "ждите подтверждение администратора")
+	if err != nil {
+		return err
+	}
+	return p.tg.SendApprovalButtons(ctx, "Запрос на подтверждение")
 }
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {

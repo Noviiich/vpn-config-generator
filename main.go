@@ -46,7 +46,7 @@ func main() {
 	vpnService := service.NewVPNService(vpnConfig, repo)
 
 	eventsProcessor := telegram.New(
-		tgClient.New(tgBotHost, cfg.TgBotToken),
+		tgClient.New(tgBotHost, cfg.TgBotToken, cfg.TgAdminID),
 		vpnService,
 	)
 

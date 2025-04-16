@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -10,7 +11,7 @@ import (
 type Config struct {
 	// ServerToken string
 	TgBotToken string
-	TgAdminID  string
+	TgAdminID  int
 	// MongoToken  string
 }
 
@@ -27,7 +28,15 @@ func Load() *Config {
 	// }
 
 	tgBotToken := os.Getenv("TG_BOT_TOKEN")
-	adminID := os.Getenv("TG_ADMIN_ID")
+	adminIDStr := os.Getenv("TG_ADMIN_ID")
+	if adminIDStr == "" {
+		log.Fatal("TG_ADMIN_ID is not specified")
+	}
+
+	adminID, err := strconv.Atoi(adminIDStr)
+	if err != nil {
+		log.Fatalf("Invalid TG_ADMIN_ID: %v", err)
+	}
 
 	if tgBotToken == "" {
 		log.Fatal("TG_BOT_TOKEN is not specified")
