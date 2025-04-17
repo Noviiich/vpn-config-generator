@@ -3,6 +3,8 @@ package telegram
 import (
 	"context"
 	"errors"
+	"strconv"
+	"strings"
 
 	"github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/events"
@@ -17,8 +19,9 @@ type Processor struct {
 }
 
 type Meta struct {
-	ChatID   int
-	Username string
+	MessageID int
+	ChatID    int
+	Username  string
 }
 
 var (
@@ -58,8 +61,8 @@ func (p *Processor) Process(ctx context.Context, event events.Event) error {
 	switch event.Type {
 	case events.Message:
 		return p.processMessage(ctx, event)
-	// case events.CallbackQuery:
-	// 	return p.processCallbackQuery(ctx, event)
+	case events.CallbackQuery:
+		return p.processCallbackQuery(ctx, event)
 	default:
 		return e.Wrap("can't process message", ErrUnknownEventType)
 	}
@@ -78,40 +81,41 @@ func (p *Processor) processMessage(ctx context.Context, event events.Event) erro
 	return nil
 }
 
-// func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event) error {
-// 	meta, err := meta(event)
-// 	if err != nil {
-// 		return e.Wrap("can't process callback query", err)
-// 	}
+func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event) error {
+	meta, err := meta(event)
+	if err != nil {
+		return e.Wrap("can't process message", err)
+	}
 
-// 	// Parse callback data
-// 	parts := strings.Split(event.Text, "_")
-// 	if len(parts) != 2 {
-// 		return errors.New("invalid callback data format")
-// 	}
+	parts := strings.Split(event.Text, "_")
+	if len(parts) != 2 {
+		return errors.New("invalid callback data format")
+	}
 
-// 	action := parts[0]
-// 	userID, err := strconv.Atoi(parts[1])
-// 	if err != nil {
-// 		return e.Wrap("invalid user ID in callback data", err)
-// 	}
+	action := parts[0]
+	userID, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return e.Wrap("invalid user ID in callback data", err)
+	}
 
-// 	// Process subscription approval/rejection
-// 	switch action {
-// 	case "approve":
-// 		if err := p.service.ApproveSubscription(ctx, userID, true); err != nil {
-// 			return e.Wrap("can't approve subscription", err)
-// 		}
-// 	case "reject":
-// 		if err := p.service.ApproveSubscription(ctx, userID, false); err != nil {
-// 			return e.Wrap("can't reject subscription", err)
-// 		}
-// 	default:
-// 		return errors.New("unknown callback action")
-// 	}
+	err = p.tg.DeleteApprovalButtons(ctx, meta.MessageID)
+	if err != nil {
+		return e.Wrap("can't delete approval buttons", err)
+	}
 
-// 	return nil
-// }
+	switch action {
+	case "approve":
+		if err := p.service.UpdateSubscription(ctx, userID); err != nil {
+			return e.Wrap("can't approve subscription", err)
+		}
+	case "reject":
+		return p.tg.NotifyUserSubscriptionRejected(ctx, userID)
+	default:
+		return errors.New("unknown callback action")
+	}
+
+	return p.tg.NotifyUserSubscriptionApproved(ctx, userID)
+}
 
 func meta(event events.Event) (Meta, error) {
 	res, ok := event.Meta.(Meta)
@@ -132,15 +136,16 @@ func event(upd telegram.Update) events.Event {
 
 	if updType == events.Message {
 		res.Meta = Meta{
-			ChatID:   upd.Message.Chat.ID,
-			Username: upd.Message.From.Username,
+			MessageID: upd.Message.MessageID,
+			ChatID:    upd.Message.Chat.ID,
+			Username:  upd.Message.From.Username,
 		}
-		// } else if updType == events.CallbackQuery {
-		// 	res.Meta = Meta{
-		// 		ChatID:   upd.CallbackQuery.Message.Chat.ID,
-		// 		Username: upd.CallbackQuery.From.Username,
-		// 	}
-		// 	res.Text = upd.CallbackQuery.Data
+	} else if updType == events.CallbackQuery {
+		res.Meta = Meta{
+			MessageID: upd.CallbackQuery.Message.MessageID,
+			ChatID:    upd.CallbackQuery.Message.Chat.ID,
+			Username:  upd.CallbackQuery.From.Username,
+		}
 	}
 
 	return res
@@ -149,19 +154,17 @@ func event(upd telegram.Update) events.Event {
 func fetchText(upd telegram.Update) string {
 	if upd.Message != nil {
 		return upd.Message.Text
+	} else if upd.CallbackQuery != nil {
+		return upd.CallbackQuery.Data
 	}
-	// if upd.CallbackQuery != nil {
-	// 	return upd.CallbackQuery.Data
-	// }
 	return ""
 }
 
 func fetchType(upd telegram.Update) events.Type {
 	if upd.Message != nil {
 		return events.Message
+	} else if upd.CallbackQuery != nil {
+		return events.CallbackQuery
 	}
-	// if upd.CallbackQuery != nil {
-	// 	return events.CallbackQuery
-	// }
 	return events.Unknown
 }

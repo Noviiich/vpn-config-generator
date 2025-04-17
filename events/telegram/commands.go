@@ -2,6 +2,7 @@ package telegram
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"strings"
 
@@ -33,7 +34,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	case UserDelete:
 		return p.deleteUser(ctx, chatID)
 	case VpnSub:
-		return p.subscribe(ctx, chatID)
+		return p.subscribe(ctx, chatID, username)
 	case HelpCmd:
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
@@ -81,16 +82,12 @@ func (p *Processor) getStatusSubscription(ctx context.Context, chatID int, usern
 	return p.tg.SendMessage(ctx, chatID, msg)
 }
 
-func (p *Processor) subscribe(ctx context.Context, chatID int) error {
-	err := p.service.UpdateSubscription(ctx, chatID)
-	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, msgErrorSubscribe)
-	}
-	err = p.tg.SendMessage(ctx, chatID, "ждите подтверждение администратора")
+func (p *Processor) subscribe(ctx context.Context, chatID int, username string) error {
+	err := p.tg.SendMessage(ctx, chatID, "Ждите подтверждение администратора")
 	if err != nil {
 		return err
 	}
-	return p.tg.SendApprovalButtons(ctx, "Запрос на подтверждение")
+	return p.tg.SendApprovalButtons(ctx, fmt.Sprintf("Запрос на подтверждение : %s", username), chatID)
 }
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
