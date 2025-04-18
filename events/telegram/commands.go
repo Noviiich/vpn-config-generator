@@ -87,7 +87,7 @@ func (p *Processor) subscribe(ctx context.Context, chatID int, username string) 
 	if err != nil {
 		return err
 	}
-	return p.tg.SendApprovalButtons(ctx, fmt.Sprintf("Запрос на подтверждение : %s", username), chatID)
+	return p.tg.SendApprovalButtons(ctx, fmt.Sprintf("Запрос на подтверждение : @%s", username), chatID)
 }
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
@@ -103,8 +103,14 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorGetUsers)
 	}
-	if users == "" {
+	if users == nil {
 		return p.tg.SendMessage(ctx, chatID, msgNoUsers)
 	}
-	return p.tg.SendMessage(ctx, chatID, users)
+	var usernames []string
+	for _, user := range users {
+		usernames = append(usernames, "@"+user.Username)
+	}
+	result := strings.Join(usernames, "\n")
+
+	return p.tg.SendMessage(ctx, chatID, result)
 }

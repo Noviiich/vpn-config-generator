@@ -1,7 +1,9 @@
 package wireguard
 
 import (
+	"bytes"
 	"fmt"
+	"log"
 	"os/exec"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
@@ -15,29 +17,29 @@ type WGManager struct {
 }
 
 func NewWGManager(configPath string) *WGManager {
-	// publicServerByte, err := exec.Command("cat", "/etc/wireguard/server_publickey").Output()
-	// if err != nil {
-	// 	log.Fatalf("can't get public server key: %v", err)
-	// }
-	// public := string(bytes.TrimSpace(publicServerByte))
+	publicServerByte, err := exec.Command("cat", "/etc/wireguard/server_publickey").Output()
+	if err != nil {
+		log.Fatalf("can't get public server key: %v", err)
+	}
+	public := string(bytes.TrimSpace(publicServerByte))
 
-	// privateServerByte, err := exec.Command("cat", "/etc/wireguard/server_privatekey").Output()
-	// if err != nil {
-	// 	log.Fatalf("can't get private server key: %v", err)
-	// }
-	// private := string(bytes.TrimSpace(privateServerByte))
+	privateServerByte, err := exec.Command("cat", "/etc/wireguard/server_privatekey").Output()
+	if err != nil {
+		log.Fatalf("can't get private server key: %v", err)
+	}
+	private := string(bytes.TrimSpace(privateServerByte))
 
-	// IPAdressServerByte, err := exec.Command("sh", "-c", "ip -o route get 8.8.8.8 | awk '/src/ {print $7}'").Output()
-	// if err != nil {
-	// 	log.Fatalf("can't get ip address server: %v", err)
-	// }
-	// ipAddr := string(bytes.TrimSpace(IPAdressServerByte))
+	IPAdressServerByte, err := exec.Command("sh", "-c", "ip -o route get 8.8.8.8 | awk '/src/ {print $7}'").Output()
+	if err != nil {
+		log.Fatalf("can't get ip address server: %v", err)
+	}
+	ipAddr := string(bytes.TrimSpace(IPAdressServerByte))
 
 	return &WGManager{
 		configPath:       configPath,
-		PublicServerKey:  "public",
-		PrivateServerKey: "private",
-		IPAddrServer:     "ipAddr",
+		PublicServerKey:  public,
+		PrivateServerKey: private,
+		IPAddrServer:     ipAddr,
 	}
 }
 

@@ -42,6 +42,19 @@ func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, ch
 Для этого выполните /subscribe`, nil
 }
 
+func (s *VPNService) RemoveSubscription(ctx context.Context, chatID int) (err error) {
+	defer func() { err = e.WrapIfErr("can't remove subscription", err) }()
+
+	user, err := s.repo.GetUser(ctx, chatID)
+	if err != nil {
+		return err
+	}
+
+	user.SubscriptionActive = false
+
+	return s.repo.UpdateUser(ctx, user)
+}
+
 func (s *VPNService) UpdateSubscription(ctx context.Context, chatID int) (err error) {
 	defer func() { err = e.WrapIfErr("can't update subscription", err) }()
 
