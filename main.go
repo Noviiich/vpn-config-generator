@@ -66,7 +66,7 @@ func main() {
 	}()
 
 	go func() {
-		checkSub := subscription_consumer.New(repo, 1*time.Second)
+		checkSub := subscription_consumer.New(repo, 1*time.Hour)
 		if err := checkSub.Start(); err != nil {
 			subCheckErrChan <- fmt.Errorf("subscription checker stopped: %v", err)
 		}

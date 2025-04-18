@@ -38,9 +38,14 @@ jobs:
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
-          echo "TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}" > /home/root/app/env.conf
-          echo "TG_ADMIN_ID=${{ secrets.TG_ADMIN_ID }}" > /home/root/app/env.conf
+          TARGET_DIR="/home/${{ secrets.SERVER_USER }}/app"
+          
+          cat <<EOF > ${TARGET_DIR}/env.conf
+          TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
+          TG_ADMIN_ID=${{ secrets.TG_ADMIN_ID }}
+          EOF
           sudo systemctl stop myapp
           sudo systemctl daemon-reload
           sudo systemctl enable myapp 
           sudo systemctl start myapp 
+          sudo systemctl status myapp --no-pager
