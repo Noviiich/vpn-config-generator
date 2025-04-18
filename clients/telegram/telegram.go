@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -19,6 +20,7 @@ type Client struct {
 	host     string
 	basePath string
 	client   http.Client
+	adminID  int
 }
 
 const (
@@ -27,11 +29,12 @@ const (
 	sendDocumentMethod = "sendDocument"
 )
 
-func New(host string, token string) *Client {
+func New(host string, token string, adminID int) *Client {
 	return &Client{
 		host:     host,
 		basePath: newBasePath(token),
 		client:   http.Client{},
+		adminID:  adminID,
 	}
 }
 
@@ -161,4 +164,81 @@ func (c *Client) doRequestDocument(ctx context.Context, method string, body io.R
 	}
 
 	return res, nil
+}
+
+func (c *Client) DeleteApprovalButtons(ctx context.Context, messageID int) (err error) {
+	defer func() { err = e.WrapIfErr("can't delete approval buttons", err) }()
+
+	replyMarkup := map[string]interface{}{
+		"inline_keyboard": [][]map[string]interface{}{},
+	}
+
+	markupJSON, err := json.Marshal(replyMarkup)
+	if err != nil {
+		return err
+	}
+
+	// Формируем параметры запроса
+	formData := url.Values{}
+	formData.Set("chat_id", strconv.Itoa(c.adminID))
+	formData.Set("message_id", strconv.Itoa(messageID))
+	formData.Set("reply_markup", string(markupJSON))
+
+	// Отправляем запрос на редактирование сообщения
+	_, err = c.doRequest(ctx, "editMessageReplyMarkup", formData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (c *Client) SendApprovalButtons(ctx context.Context, text string, userID int) (err error) {
+	defer func() { err = e.WrapIfErr("can't send approval buttons", err) }()
+
+	approveData := fmt.Sprintf("approve_%d", userID)
+	rejectData := fmt.Sprintf("reject_%d", userID)
+
+	replyMarkup := map[string]interface{}{
+		"inline_keyboard": [][]map[string]interface{}{
+			{
+				{
+					"text":          "Одобрить",
+					"callback_data": approveData,
+				},
+				{
+					"text":          "Отклонить",
+					"callback_data": rejectData,
+				},
+			},
+		},
+	}
+
+	markupJSON, err := json.Marshal(replyMarkup)
+	if err != nil {
+		return err
+	}
+
+	formData := url.Values{}
+	formData.Set("chat_id", strconv.Itoa(c.adminID))
+	formData.Set("text", text)
+	formData.Set("reply_markup", string(markupJSON))
+
+	_, err = c.doRequest(ctx, sendMessageMethod, formData)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) NotifyUserSubscriptionApproved(ctx context.Context, chatID int) error {
+	text := "✅ Ваша заявка на подписку одобрена! Теперь вы можете использовать VPN."
+	return c.SendMessage(ctx, chatID, text)
+}
+
+func (c *Client) NotifyUserSubscriptionRejected(ctx context.Context, chatID int) error {
+	text := "❌ К сожалению, ваша заявка на подписку отклонена. Пожалуйста, свяжитесь с администратором для получения дополнительной информации."
+	return c.SendMessage(ctx, chatID, text)
 }

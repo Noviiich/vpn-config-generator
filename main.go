@@ -2,11 +2,14 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"time"
 
 	tgClient "github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/config"
 	event_consumer "github.com/Noviiich/vpn-config-generator/consumer/event-consumer"
+	subscription_consumer "github.com/Noviiich/vpn-config-generator/consumer/subscription-consumer"
 	"github.com/Noviiich/vpn-config-generator/events/telegram"
 	"github.com/Noviiich/vpn-config-generator/service"
 	"github.com/Noviiich/vpn-config-generator/storage/postgres"
@@ -46,14 +49,33 @@ func main() {
 	vpnService := service.NewVPNService(vpnConfig, repo)
 
 	eventsProcessor := telegram.New(
-		tgClient.New(tgBotHost, cfg.TgBotToken),
+		tgClient.New(tgBotHost, cfg.TgBotToken, cfg.TgAdminID),
 		vpnService,
 	)
 
 	log.Print("service started")
 
-	consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
-	if err := consumer.Start(); err != nil {
-		log.Fatal("service is stopped", err)
+	consumerErrChan := make(chan error)
+	subCheckErrChan := make(chan error)
+
+	go func() {
+		consumer := event_consumer.New(eventsProcessor, eventsProcessor, batchSize)
+		if err := consumer.Start(); err != nil {
+			consumerErrChan <- fmt.Errorf("event consumer stopped: %v", err)
+		}
+	}()
+
+	go func() {
+		checkSub := subscription_consumer.New(repo, 1*time.Second)
+		if err := checkSub.Start(); err != nil {
+			subCheckErrChan <- fmt.Errorf("subscription checker stopped: %v", err)
+		}
+	}()
+
+	select {
+	case err := <-consumerErrChan:
+		log.Fatal(err)
+	case err := <-subCheckErrChan:
+		log.Fatal(err)
 	}
 }
