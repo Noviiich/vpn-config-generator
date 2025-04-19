@@ -5,18 +5,23 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/Noviiich/vpn-config-generator/lib/e"
 )
 
 const (
-	HelpCmd    = "/help"
-	StartCmd   = "/start"
-	WGVpnCmd   = "/wireguard"
-	VpnStatus  = "/status"
-	VpnSub     = "/subscribe"
-	UserDelete = "/userdelete"
-	GetUsers   = "/getusers"
+	HomeCmd      = btnHome
+	ProtocolsCmd = btnProtocols
+	TariffsCmd   = btnTariffs
+	ProfileCmd   = btnProfile
+	HelpCmd      = "/help"
+	StartCmd     = "/start"
+	WGVpnCmd     = "/wireguard"
+	VpnStatus    = "/status"
+	VpnSub       = "/subscribe"
+	UserDelete   = "/userdelete"
+	GetUsers     = "/getusers"
 )
 
 func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username string) error {
@@ -25,6 +30,14 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	log.Printf("got new command '%s' from '%s", text, username)
 
 	switch text {
+	case HomeCmd:
+		return p.showHome(ctx, chatID)
+	case ProfileCmd:
+		return p.showProfile(ctx, chatID, username)
+	case ProtocolsCmd:
+		return p.showProtocols(ctx, chatID)
+	case TariffsCmd:
+		return p.showTariffs(ctx, chatID)
 	case WGVpnCmd:
 		return p.getConfig(ctx, chatID, username)
 	case VpnStatus:
@@ -71,7 +84,7 @@ func (p *Processor) sendHello(ctx context.Context, chatID int, username string) 
 	if err != nil {
 		return p.tg.SendMessage(ctx, chatID, msgErrorCreateUser)
 	}
-	return p.tg.SendMessage(ctx, chatID, msgHello)
+	return p.showHome(ctx, chatID)
 }
 
 func (p *Processor) getStatusSubscription(ctx context.Context, chatID int, username string) (err error) {
@@ -113,4 +126,35 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 	result := strings.Join(usernames, "\n")
 
 	return p.tg.SendMessage(ctx, chatID, result)
+}
+
+func (p *Processor) showHome(ctx context.Context, chatID int) error {
+	buttons := []string{btnProfile, btnProtocols, btnTariffs}
+	return p.tg.SendMessageWithKeyboard(ctx, chatID, msgHome, buttons)
+}
+
+func (p *Processor) showProfile(ctx context.Context, chatID int, username string) error {
+	user, err := p.service.GetUser(ctx, chatID, username)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, msgErrorGetStatus)
+	}
+
+	status := "Неактивна"
+	daysLeft := 0
+	if user.SubscriptionActive {
+		status = "Активна"
+		daysLeft = int(time.Until(user.SubscriptionExpiry).Hours() / 24)
+	}
+
+	profileMsg := fmt.Sprintf(msgProfile, chatID, username, status, daysLeft)
+	buttons := []string{btnHome}
+	return p.tg.SendMessageWithKeyboard(ctx, chatID, profileMsg, buttons)
+}
+
+func (p *Processor) showProtocols(ctx context.Context, chatID int) error {
+	return p.tg.SendMessageWithProtocolButtons(ctx, chatID, msgProtocols)
+}
+
+func (p *Processor) showTariffs(ctx context.Context, chatID int) error {
+	return p.tg.SendMessageWithTariffButtons(ctx, chatID, msgTariffs)
 }
