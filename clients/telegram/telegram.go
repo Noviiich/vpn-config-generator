@@ -242,3 +242,113 @@ func (c *Client) NotifyUserSubscriptionRejected(ctx context.Context, chatID int)
 	text := "❌ К сожалению, ваша заявка на подписку отклонена. Пожалуйста, свяжитесь с администратором для получения дополнительной информации."
 	return c.SendMessage(ctx, chatID, text)
 }
+
+func (c *Client) SendMessageWithKeyboard(ctx context.Context, chatID int, text string, buttons []string) error {
+	keyboard := map[string]interface{}{
+		"keyboard": [][]string{
+			buttons,
+		},
+		"resize_keyboard": true,
+	}
+
+	keyboardJSON, err := json.Marshal(keyboard)
+	if err != nil {
+		return e.Wrap("can't marshal keyboard", err)
+	}
+
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("reply_markup", string(keyboardJSON))
+
+	_, err = c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send message with keyboard", err)
+	}
+
+	return nil
+}
+
+func (c *Client) SendMessageWithTariffButtons(ctx context.Context, chatID int, text string) error {
+	keyboard := map[string]interface{}{
+		"inline_keyboard": [][]map[string]interface{}{
+			{
+				{
+					"text":          "Базовый - 50₽/мес",
+					"callback_data": "tariff_basic",
+				},
+			},
+			{
+				{
+					"text":          "Стандарт - 130₽/3 мес",
+					"callback_data": "tariff_standard",
+				},
+			},
+			{
+				{
+					"text":          "Премиум - 240₽/6 мес",
+					"callback_data": "tariff_premium",
+				},
+			},
+		},
+	}
+
+	keyboardJSON, err := json.Marshal(keyboard)
+	if err != nil {
+		return e.Wrap("can't marshal keyboard", err)
+	}
+
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("reply_markup", string(keyboardJSON))
+
+	_, err = c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send message with tariff buttons", err)
+	}
+
+	return nil
+}
+
+func (c *Client) SendMessageWithProtocolButtons(ctx context.Context, chatID int, text string) error {
+	keyboard := map[string]interface{}{
+		"inline_keyboard": [][]map[string]interface{}{
+			{
+				{
+					"text":          "WireGuard",
+					"callback_data": "protocol_wireguard",
+				},
+			},
+			{
+				{
+					"text":          "OpenVPN",
+					"callback_data": "protocol_openvpn",
+				},
+			},
+			// {
+			// 	{
+			// 		"text":          "IKEv2",
+			// 		"callback_data": "protocol_ikev2",
+			// 	},
+			// },
+		},
+	}
+
+	keyboardJSON, err := json.Marshal(keyboard)
+	if err != nil {
+		return e.Wrap("can't marshal keyboard", err)
+	}
+
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("reply_markup", string(keyboardJSON))
+
+	_, err = c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send message with protocol buttons", err)
+	}
+
+	return nil
+}
