@@ -93,28 +93,61 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 	}
 
 	action := parts[0]
-	userID, err := strconv.Atoi(parts[1])
-	if err != nil {
-		return e.Wrap("invalid user ID in callback data", err)
-	}
-
-	err = p.tg.DeleteApprovalButtons(ctx, meta.MessageID)
-	if err != nil {
-		return e.Wrap("can't delete approval buttons", err)
-	}
+	value := parts[1]
 
 	switch action {
 	case "approve":
+		userID, err := strconv.Atoi(value)
+		if err != nil {
+			return e.Wrap("invalid user ID in callback data", err)
+		}
+		err = p.tg.DeleteApprovalButtons(ctx, meta.MessageID)
+		if err != nil {
+			return e.Wrap("can't delete approval buttons", err)
+		}
 		if err := p.service.UpdateSubscription(ctx, userID); err != nil {
 			return e.Wrap("can't approve subscription", err)
 		}
+		return p.tg.NotifyUserSubscriptionApproved(ctx, userID)
+
 	case "reject":
+		userID, err := strconv.Atoi(value)
+		if err != nil {
+			return e.Wrap("invalid user ID in callback data", err)
+		}
+		err = p.tg.DeleteApprovalButtons(ctx, meta.MessageID)
+		if err != nil {
+			return e.Wrap("can't delete approval buttons", err)
+		}
 		return p.tg.NotifyUserSubscriptionRejected(ctx, userID)
+
+	case "protocol":
+		switch value {
+		case "wireguard":
+			return p.getConfig(ctx, meta.ChatID, meta.Username)
+		case "openvpn":
+			return p.tg.SendMessage(ctx, meta.ChatID, "OpenVPN конфигурация будет доступна в ближайшее время")
+		case "ikev2":
+			return p.tg.SendMessage(ctx, meta.ChatID, "IKEv2 конфигурация будет доступна в ближайшее время")
+		default:
+			return errors.New("unknown protocol")
+		}
+
+	case "tariff":
+		switch value {
+		case "basic":
+			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления базового тарифа, пожалуйста, свяжитесь с администратором")
+		case "standard":
+			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления стандартного тарифа, пожалуйста, свяжитесь с администратором")
+		case "premium":
+			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления премиум тарифа, пожалуйста, свяжитесь с администратором")
+		default:
+			return errors.New("unknown tariff")
+		}
+
 	default:
 		return errors.New("unknown callback action")
 	}
-
-	return p.tg.NotifyUserSubscriptionApproved(ctx, userID)
 }
 
 func meta(event events.Event) (Meta, error) {
