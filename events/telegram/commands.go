@@ -15,6 +15,7 @@ const (
 	ProtocolsCmd = btnProtocols
 	TariffsCmd   = btnTariffs
 	ProfileCmd   = btnProfile
+	ContactCmd   = btnContact
 	HelpCmd      = "/help"
 	StartCmd     = "/start"
 	WGVpnCmd     = "/wireguard"
@@ -38,6 +39,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 		return p.showProtocols(ctx, chatID)
 	case TariffsCmd:
 		return p.showTariffs(ctx, chatID)
+	case ContactCmd:
+		return p.showContact(ctx, chatID)
 	case WGVpnCmd:
 		return p.wireguard(ctx, chatID, username)
 	case VpnStatus:
@@ -135,7 +138,7 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 }
 
 func (p *Processor) showHome(ctx context.Context, chatID int) error {
-	buttons := []string{btnProfile, btnProtocols, btnTariffs}
+	buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}}
 	return p.tg.SendMessageWithKeyboard(ctx, chatID, msgHome, buttons)
 }
 
@@ -153,14 +156,20 @@ func (p *Processor) showProfile(ctx context.Context, chatID int, username string
 	}
 
 	profileMsg := fmt.Sprintf(msgProfile, chatID, username, status, daysLeft)
-	buttons := []string{btnHome}
+	buttons := [][]string{{btnHome}}
 	return p.tg.SendMessageWithKeyboard(ctx, chatID, profileMsg, buttons)
 }
 
 func (p *Processor) showProtocols(ctx context.Context, chatID int) error {
-	return p.tg.SendMessageWithProtocolButtons(ctx, chatID, msgProtocols)
+	buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}}
+	return p.tg.SendMessageWithProtocolButtons(ctx, chatID, msgProtocols, buttons)
 }
 
 func (p *Processor) showTariffs(ctx context.Context, chatID int) error {
 	return p.tg.SendMessageWithTariffButtons(ctx, chatID, msgTariffs)
+}
+
+func (p *Processor) showContact(ctx context.Context, chatID int) error {
+	buttons := [][]string{{btnHome}}
+	return p.tg.SendMessageWithKeyboard(ctx, chatID, msgContact, buttons)
 }
