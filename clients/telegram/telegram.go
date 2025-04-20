@@ -63,6 +63,20 @@ func (c *Client) Updates(ctx context.Context, offset int, limit int) (updates []
 	return res.Result, nil
 }
 
+func (c *Client) SendMarkdown(ctx context.Context, chatID int, text string) error {
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("parse_mode", "Markdown")
+
+	_, err := c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send markdown", err)
+	}
+
+	return nil
+}
+
 func (c *Client) SendMessage(ctx context.Context, chatID int, text string) error {
 	q := url.Values{}
 	q.Add("chat_id", strconv.Itoa(chatID))
@@ -194,21 +208,21 @@ func (c *Client) DeleteApprovalButtons(ctx context.Context, messageID int) (err 
 
 }
 
-func (c *Client) SendApprovalButtons(ctx context.Context, text string, userID int) (err error) {
+func (c *Client) SendApprovalButtons(ctx context.Context, text string, userID int, tariff string) (err error) {
 	defer func() { err = e.WrapIfErr("can't send approval buttons", err) }()
 
-	approveData := fmt.Sprintf("approve_%d", userID)
-	rejectData := fmt.Sprintf("reject_%d", userID)
+	approveData := fmt.Sprintf("approve_%d_%s", userID, tariff)
+	rejectData := fmt.Sprintf("reject_%d_%s", userID, tariff)
 
 	replyMarkup := map[string]interface{}{
 		"inline_keyboard": [][]map[string]interface{}{
 			{
 				{
-					"text":          "Одобрить",
+					"text":          "✅ Одобрить",
 					"callback_data": approveData,
 				},
 				{
-					"text":          "Отклонить",
+					"text":          "❌ Отклонить",
 					"callback_data": rejectData,
 				},
 			},

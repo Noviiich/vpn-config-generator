@@ -55,7 +55,7 @@ func (s *VPNService) RemoveSubscription(ctx context.Context, chatID int) (err er
 	return s.repo.UpdateUser(ctx, user)
 }
 
-func (s *VPNService) UpdateSubscription(ctx context.Context, chatID int) (err error) {
+func (s *VPNService) UpdateSubscription(ctx context.Context, chatID int, expiry time.Duration) (err error) {
 	defer func() { err = e.WrapIfErr("can't update subscription", err) }()
 
 	user, err := s.repo.GetUser(ctx, chatID)
@@ -64,7 +64,7 @@ func (s *VPNService) UpdateSubscription(ctx context.Context, chatID int) (err er
 	}
 
 	user.SubscriptionActive = true
-	user.SubscriptionExpiry = time.Now().Add(30 * 24 * time.Hour)
+	user.SubscriptionExpiry = time.Now().Add(expiry)
 
 	return s.repo.UpdateUser(ctx, user)
 }

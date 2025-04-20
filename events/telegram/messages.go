@@ -4,6 +4,18 @@ const msgHelp = `Отправьте /wireguard чтобы получить ко�
 
 const msgHello = "Hi there! 👾\n\n" + msgHelp
 
+const msgWireGuardInstructions = `📱 Инструкция по установке WireGuard:
+
+Шаг 1. Установите приложение WireGuard ⬇️
+Шаг 2. В телеграм боте выберите сервер с протоколом WireGuard 🌎
+Шаг 3. Скачайте файл на устройство или откройте его и нажмите "поделиться" с приложением WireGuard для iPhone
+Шаг 4. Добавьте файл в приложение WireGuard и включите VPN ➕
+
+📲 [Скачать Wireguard для iPhone (iOS)](https://apps.apple.com/ru/app/wireguard/id1441195209)
+📲 [Скачать Wireguard для Android](https://play.google.com/store/apps/details?id=com.wireguard.android)
+🖥 [Скачать Wireguard для MacOS](https://apps.apple.com/ru/app/wireguard/id1451685025?mt=12)
+🖥 [Скачать Wireguard для Windows](https://www.wireguard.com/install/)`
+
 const (
 	msgUnknownCommand = "Unknown command 🤔"
 	msgAlreadyExists  = "You have already have this page in your list 🤗"
