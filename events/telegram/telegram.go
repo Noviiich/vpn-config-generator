@@ -3,8 +3,11 @@ package telegram
 import (
 	"context"
 	"errors"
+	"fmt"
+	"log"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/Noviiich/vpn-config-generator/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/events"
@@ -88,12 +91,9 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 	}
 
 	parts := strings.Split(event.Text, "_")
-	if len(parts) != 2 {
-		return errors.New("invalid callback data format")
-	}
-
 	action := parts[0]
 	value := parts[1]
+	log.Println(parts)
 
 	switch action {
 	case "approve":
@@ -105,8 +105,23 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 		if err != nil {
 			return e.Wrap("can't delete approval buttons", err)
 		}
-		if err := p.service.UpdateSubscription(ctx, userID); err != nil {
-			return e.Wrap("can't approve subscription", err)
+
+		tariff := parts[2]
+		switch tariff {
+		case "basic":
+			if err := p.service.UpdateSubscription(ctx, userID, 30*24*time.Hour); err != nil {
+				return e.Wrap("can't approve subscription", err)
+			}
+		case "standart":
+			if err := p.service.UpdateSubscription(ctx, userID, 90*24*time.Hour); err != nil {
+				return e.Wrap("can't approve subscription", err)
+			}
+		case "premium":
+			if err := p.service.UpdateSubscription(ctx, userID, 180*24*time.Hour); err != nil {
+				return e.Wrap("can't approve subscription", err)
+			}
+		default:
+			return errors.New("unknown tariff")
 		}
 		return p.tg.NotifyUserSubscriptionApproved(ctx, userID)
 
@@ -134,16 +149,29 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 		}
 
 	case "tariff":
+		var tariffName, tariffPrice string
 		switch value {
 		case "basic":
-			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления базового тарифа, пожалуйста, свяжитесь с администратором")
+			tariffName = "Базовый"
+			tariffPrice = "50₽/мес"
 		case "standard":
-			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления стандартного тарифа, пожалуйста, свяжитесь с администратором")
+			tariffName = "Стандарт"
+			tariffPrice = "130₽/3 мес"
 		case "premium":
-			return p.tg.SendMessage(ctx, meta.ChatID, "Для оформления премиум тарифа, пожалуйста, свяжитесь с администратором")
+			tariffName = "Премиум"
+			tariffPrice = "240₽/6 мес"
 		default:
 			return errors.New("unknown tariff")
 		}
+
+		if err := p.tg.SendMessage(ctx, meta.ChatID, "Ваш запрос на тариф отправлен администратору. Ожидайте ответа."); err != nil {
+			return err
+		}
+
+		adminMsg := fmt.Sprintf("Запрос на тариф от пользователя @%s (ID: %d)\nТариф: %s\nСтоимость: %s",
+			meta.Username, meta.ChatID, tariffName, tariffPrice)
+
+		return p.tg.SendApprovalButtons(ctx, adminMsg, meta.ChatID, value)
 
 	default:
 		return errors.New("unknown callback action")
