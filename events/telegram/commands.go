@@ -100,7 +100,7 @@ func (p *Processor) subscribe(ctx context.Context, chatID int, username string) 
 	if err != nil {
 		return err
 	}
-	return p.tg.SendApprovalButtons(ctx, fmt.Sprintf("Запрос на подтверждение : @%s", username), chatID)
+	return p.tg.SendApprovalButtons(ctx, fmt.Sprintf("Запрос на подтверждение : @%s", username), chatID, "basic")
 }
 
 func (p *Processor) deleteUser(ctx context.Context, chatID int) error {
