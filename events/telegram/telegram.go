@@ -139,7 +139,7 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 	case "protocol":
 		switch value {
 		case "wireguard":
-			return p.getConfig(ctx, meta.ChatID, meta.Username)
+			return p.wireguard(ctx, meta.ChatID, meta.Username)
 		case "openvpn":
 			return p.tg.SendMessage(ctx, meta.ChatID, "OpenVPN конфигурация будет доступна в ближайшее время")
 		case "ikev2":

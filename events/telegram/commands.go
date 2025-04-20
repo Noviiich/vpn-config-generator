@@ -39,7 +39,7 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	case TariffsCmd:
 		return p.showTariffs(ctx, chatID)
 	case WGVpnCmd:
-		return p.getConfig(ctx, chatID, username)
+		return p.wireguard(ctx, chatID, username)
 	case VpnStatus:
 		return p.getStatusSubscription(ctx, chatID, username)
 	case GetUsers:
