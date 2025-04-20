@@ -63,6 +63,20 @@ func (c *Client) Updates(ctx context.Context, offset int, limit int) (updates []
 	return res.Result, nil
 }
 
+func (c *Client) SendMarkdown(ctx context.Context, chatID int, text string) error {
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("parse_mode", "Markdown")
+
+	_, err := c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send markdown", err)
+	}
+
+	return nil
+}
+
 func (c *Client) SendMessage(ctx context.Context, chatID int, text string) error {
 	q := url.Values{}
 	q.Add("chat_id", strconv.Itoa(chatID))
