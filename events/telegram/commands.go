@@ -57,12 +57,18 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 	}
 }
 
-func (p *Processor) getConfig(ctx context.Context, chatID int, username string) (err error) {
+func (p *Processor) wireguard(ctx context.Context, chatID int, username string) (err error) {
 	defer func() { err = e.WrapIfErr("can't do command: can't get config", err) }()
 
+	// First send installation instructions
+	if err := p.tg.SendMarkdown(ctx, chatID, msgWireGuardInstructions); err != nil {
+		return err
+	}
+
+	// Then get and send the configuration
 	configText, err := p.service.GetConfig(ctx, chatID, username)
 	if err != nil {
-		return p.tg.SendMessage(ctx, chatID, msgErrorGetConfig)
+		return err
 	}
 	if err == nil && configText == "" {
 		return p.tg.SendMessage(ctx, chatID, msgNoSubscription)
