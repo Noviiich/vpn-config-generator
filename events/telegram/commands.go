@@ -161,8 +161,8 @@ func (p *Processor) showProfile(ctx context.Context, chatID int, username string
 }
 
 func (p *Processor) showProtocols(ctx context.Context, chatID int) error {
-	buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}}
-	return p.tg.SendMessageWithProtocolButtons(ctx, chatID, msgProtocols, buttons)
+	// buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}}
+	return p.tg.SendMessageWithProtocolButtons(ctx, chatID, msgProtocols)
 }
 
 func (p *Processor) showTariffs(ctx context.Context, chatID int) error {

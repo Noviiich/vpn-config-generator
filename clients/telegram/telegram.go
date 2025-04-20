@@ -323,7 +323,7 @@ func (c *Client) SendMessageWithTariffButtons(ctx context.Context, chatID int, t
 	return nil
 }
 
-func (c *Client) SendMessageWithProtocolButtons(ctx context.Context, chatID int, text string, buttons [][]string) error {
+func (c *Client) SendMessageWithProtocolButtons(ctx context.Context, chatID int, text string) error {
 	keyboard := map[string]interface{}{
 		"inline_keyboard": [][]map[string]interface{}{
 			{
@@ -345,8 +345,6 @@ func (c *Client) SendMessageWithProtocolButtons(ctx context.Context, chatID int,
 			// 	},
 			// },
 		},
-		"keyboard":        buttons,
-		"resize_keyboard": true,
 	}
 
 	keyboardJSON, err := json.Marshal(keyboard)
