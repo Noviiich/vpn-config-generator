@@ -33,9 +33,10 @@ type Actions interface {
 }
 
 type User struct {
-	ID         int    `db:"id"`
-	TelegramID int    `db:"telegram_id"`
-	Username   string `db:"username"`
+	ID         int       `db:"id"`
+	TelegramID int       `db:"telegram_id"`
+	Username   string    `db:"username"`
+	CreatedAt  time.Time `db:"created_at"`
 }
 
 type SubscriptionType struct {
@@ -46,12 +47,10 @@ type SubscriptionType struct {
 }
 
 type Subscription struct {
-	ID         int       `db:"id"`
-	UserID     int       `db:"user_id"`
-	TypeID     int       `db:"type_id"`
-	IsActive   bool      `db:"is_active"`
-	StartDate  time.Time `db:"start_date"`
-	ExpiryDate time.Time `db:"expiry_date"`
+	ID             int       `db:"id"`
+	UserID         int       `db:"user_id"`
+	SubscriptionID int       `db:"subscription_id"`
+	ExpiryDate     time.Time `db:"expiry_date"`
 }
 
 type ActionType struct {

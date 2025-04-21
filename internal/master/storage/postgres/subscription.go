@@ -13,16 +13,16 @@ func (s *Storage) CreateSubscription(ctx context.Context, userID, typeID int) er
 		return err
 	}
 	query := `
-		INSERT INTO subscriptions (user_id, type_id, expiry_date)
+		INSERT INTO subscriptions (user_id, subscription_id, expiry_date)
 		VALUES ($1, $2, 
 		NOW() + (SELECT duration FROM subscription_types WHERE id = $2)
 		)
 		ON CONFLICT (user_id) 
 		DO UPDATE SET
-			type_id = EXCLUDED.type_id,
+			subscription_id = EXCLUDED.subscription_id,
 			expiry_date = NOW() + (
 				SELECT duration FROM subscription_types 
-				WHERE id = EXCLUDED.type_id
+				WHERE id = EXCLUDED.subscription_id
 			)`
 
 	_, err = tx.ExecContext(ctx, query, userID, typeID)

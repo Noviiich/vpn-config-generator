@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     telegram_id BIGINT UNIQUE NOT NULL,
-    username TEXT UNIQUE NOT NULL
+    username TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS subscription_types (
@@ -12,13 +13,14 @@ CREATE TABLE IF NOT EXISTS subscription_types (
 );
 
 INSERT INTO subscription_types (name, duration, max_devices)
-VALUES ('basic', INTERVAL '30 days', 3);
-
+VALUES 
+('basic', INTERVAL '30 days', 3),
+('premium', INTERVAL '90 days', 10);
 
 CREATE TABLE IF NOT EXISTS subscriptions (
     id SERIAL PRIMARY KEY,
     user_id BIGINT UNIQUE REFERENCES users(id) ON DELETE CASCADE,
-    type_id INT NOT NULL REFERENCES subscription_types(id),
+    subscription_id INT NOT NULL REFERENCES subscription_types(id),
     expiry_date TIMESTAMP NOT NULL
 );
 
@@ -38,17 +40,10 @@ CREATE TABLE IF NOT EXISTS actions (
     user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-//подумай
-CREATE TABLE IF NOT EXISTS device_types (
-    id SERIAL PRIMARY KEY,
-    name TEXT UNIQUE NOT NULL,
-    description TEXT NOT NULL
-);
 
-CREATE TABLE IF NOT EXISTS devices (
-    id SERIAL PRIMARY KEY,
-    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    device_id INT REFERENCES device_types(id),
-    private_key TEXT NOT NULL,
-    public_key TEXT NOT NULL
+CREATE TABLE IF NOT EXISTS servers (
+  id SERIAL PRIMARY KEY,
+  protocol TEXT UNIQUE NOT NULL,
+  ip_address INET UNIQUE NOT NULL,
+  port INT NOT NULL
 );
