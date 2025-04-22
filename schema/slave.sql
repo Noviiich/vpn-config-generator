@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS devices (
     id SERIAL PRIMARY KEY,
-    user_id BIGINT REFERENCES users(telegram_id) ON DELETE CASCADE,
+    user_id BIGINT,
     private_key TEXT NOT NULL,
     public_key TEXT NOT NULL,
     ip TEXT NOT NULL,
