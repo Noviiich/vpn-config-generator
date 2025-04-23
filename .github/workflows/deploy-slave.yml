@@ -40,7 +40,12 @@ jobs:
         username: ${{ secrets.SLAVE_SERVER_USER }}
         key: ${{ secrets.SLAVE_SERVER_SSH_KEY }}
         script: |
-          TARGET_DIR="/home/${{ secrets.SLAVE_SERVER_USER }}/app"
+          TARGET_DIR="/home/${{ secrets.SERVER_USER }}/app"
+          
+          cat <<EOF > ${TARGET_DIR}/env.conf
+          TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
+          TG_ADMIN_ID=${{ secrets.TG_ADMIN_ID }}
+          EOF
           sudo systemctl stop myapp
           sudo systemctl daemon-reload
           sudo systemctl enable myapp 
