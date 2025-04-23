@@ -2,17 +2,19 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
 )
 
 func (s *VPNService) GetConfig(ctx context.Context, userID int) (config string, err error) {
-	baseURL := "http://localhost:8080/"
+	baseURL := "http://localhost:8080/config"
 	params := url.Values{}
-	params.Add("userID", strconv.Itoa(userID))
+	params.Add("user_id", strconv.Itoa(userID))
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
 
 	// Создаем GET-запрос
@@ -40,5 +42,12 @@ func (s *VPNService) GetConfig(ctx context.Context, userID int) (config string, 
 		return "", fmt.Errorf("failed to read response: %v", err)
 	}
 
-	return string(body), nil
+	var response struct {
+		Config string `json:"config"`
+	}
+	if err := json.Unmarshal([]byte(body), &response); err != nil {
+		log.Fatalf("Failed to parse JSON: %v", err)
+	}
+
+	return response.Config, nil
 }

@@ -15,7 +15,7 @@ func (s *Storage) CreateDevice(ctx context.Context, user *storage.Device) error 
 	          VALUES ($1, $2, $3, $4, $5) RETURNING id`
 
 	err = tx.QueryRowContext(ctx, query,
-		user.UserID, user.PrivateKey, user.PrivateKey, user.PublicKey, user.IP, user.IsActive).Scan(&user.ID)
+		user.UserID, user.PrivateKey, user.PublicKey, user.IP, user.IsActive).Scan(&user.ID)
 	if err != nil {
 		return err
 	}

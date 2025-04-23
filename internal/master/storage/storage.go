@@ -15,8 +15,8 @@ type Storage interface {
 }
 
 type User struct {
-	TelegramID         int
-	Username           string
-	SubscriptionActive bool
-	SubscriptionExpiry time.Time
+	TelegramID         int       `db:"telegram_id" json:"telegram_id"`
+	Username           string    `db:"username" json:"username"`
+	SubscriptionActive bool      `db:"subscription_active" json:"subscription_active"`
+	SubscriptionExpiry time.Time `db:"subscription_expiry" json:"subscription_expiry"`
 }

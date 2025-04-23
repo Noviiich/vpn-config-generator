@@ -12,10 +12,10 @@ type Storage interface {
 	IsExistsDevice(ctx context.Context, telegramID int) (bool, error)
 }
 type Device struct {
-	ID         string
-	UserID     int
-	PrivateKey string
-	PublicKey  string
-	IP         string
-	IsActive   bool
+	ID         string `db:"id" json:"id"`
+	UserID     int    `db:"user_id" json:"user_id"`
+	PrivateKey string `db:"private_key" json:"private_key"`
+	PublicKey  string `db:"public_key" json:"public_key"`
+	IP         string `db:"ip" json:"ip"`
+	IsActive   bool   `db:"is_active" json:"is_active"`
 }

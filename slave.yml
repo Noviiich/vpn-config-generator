@@ -1,0 +1,16 @@
+version: '3.9'
+services:
+  postgres_slave:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: novich   
+      POSTGRES_PASSWORD: novich 
+      POSTGRES_DB: vpndb     
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_slave:/var/lib/postgresql/data
+
+volumes:
+  pgdata_slave:
