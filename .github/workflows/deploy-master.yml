@@ -1,0 +1,53 @@
+name: Deploy Master Server
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [dev]
+    # paths:
+    #   - 'internal/slave/**'
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.23.4'
+
+    - name: Build binary
+      run: |
+        go mod tidy
+        go build -o myapp ./internal/master/cmd/main.go
+
+    - name: Deploy to Slave Server
+      uses: appleboy/scp-action@v0.1.4
+      with:
+        host: ${{ secrets.MASTER_IP }}
+        username: ${{ secrets.MASTER_USER }}
+        key: ${{ secrets.MASTER_SSH }}
+        source: "myapp"
+        target: "/home/${{ secrets.MASTER_USER }}/app"
+
+    - name: Restart Service
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ secrets.MASTER_IP }}
+        username: ${{ secrets.MASTER_USER }}
+        key: ${{ secrets.MASTER_SSH }}
+        script: |
+          TARGET_DIR="/home/${{ secrets.MASTER_USER }}/app"
+          
+          cat <<EOF > ${TARGET_DIR}/env.conf
+          TG_BOT_TOKEN=${{ secrets.TG_BOT_TOKEN }}
+          TG_ADMIN_ID=${{ secrets.TG_ADMIN_ID }}
+          EOF
+          sudo systemctl stop myapp
+          sudo systemctl daemon-reload
+          sudo systemctl enable myapp 
+          sudo systemctl start myapp 
+          sudo systemctl status myapp --no-pager
