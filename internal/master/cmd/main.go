@@ -25,7 +25,7 @@ func main() {
 	repo := postgres.New(
 		cfg.Database.Username,
 		cfg.Database.Password,
-		"vpndb",
+		cfg.Database.DBName,
 		cfg.Database.Host,
 		cfg.Database.Port,
 		cfg.Database.SSLMode,
