@@ -1,0 +1,15 @@
+[Unit]
+Description=My Go Application
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/home/root/app
+EnvironmentFile=/home/root/app/env.conf
+ExecStart=/home/root/app/myapp
+Restart=always
+StandardOutput=append:/var/log/myapp.log
+StandardError=append:/var/log/myapp_error.log
+
+[Install]
+WantedBy=multi-user.target
