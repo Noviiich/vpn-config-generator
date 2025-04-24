@@ -134,3 +134,7 @@ echo "Настройка завершена!"
 echo "Публичный ключ сервера: $(cat server_publickey)"
 echo "Интерфейс: $INTERFACE"
 echo "Конфиг: /etc/wireguard/wg0.conf"
+
+sudo apt install docker-compose
+sudo apt install postgresql-client
+sudo apt install postgresql-client-common
