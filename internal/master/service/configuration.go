@@ -12,7 +12,7 @@ import (
 )
 
 func (s *VPNService) GetConfig(ctx context.Context, userID int) (config string, err error) {
-	baseURL := "http://localhost:8080/config"
+	baseURL := "http://62.113.36.44:8080/config"
 	params := url.Values{}
 	params.Add("user_id", strconv.Itoa(userID))
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())
