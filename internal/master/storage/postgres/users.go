@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/Noviiich/vpn-config-generator/internal/master/storage"
 )
@@ -66,7 +65,7 @@ func (s *Storage) GetUsers(ctx context.Context) ([]storage.User, error) {
 	}
 
 	if users == nil {
-		return nil, sql.ErrNoRows
+		return nil, nil
 	}
 
 	return users, nil
