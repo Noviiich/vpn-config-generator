@@ -5,7 +5,7 @@ import (
 	"log"
 	"os/exec"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/slave/lib/e"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/protocol"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/storage"
 )

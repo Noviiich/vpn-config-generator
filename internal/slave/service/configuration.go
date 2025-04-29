@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
+	"github.com/Noviiich/vpn-config-generator/internal/slave/lib/e"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/storage"
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
 )
 
 func (s *VPNService) createConfig(device *storage.Device) (c string, err error) {

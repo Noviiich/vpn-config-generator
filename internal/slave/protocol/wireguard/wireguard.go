@@ -6,7 +6,7 @@ import (
 	"log"
 	"os/exec"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/slave/lib/e"
 )
 
 type Wireguard struct {

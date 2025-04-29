@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Noviiich/vpn-config-generator/internal/config"
+	"github.com/Noviiich/vpn-config-generator/internal/slave/config"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/handlers"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/protocol/wireguard"
 	"github.com/Noviiich/vpn-config-generator/internal/slave/service"

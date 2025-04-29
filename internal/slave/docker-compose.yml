@@ -1,0 +1,63 @@
+services:
+  slave-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - WG_PRIVATE_KEY=${WG_PRIVATE_KEY}
+      - WG_PEER_PUBLIC_KEY=${WG_PEER_PUBLIC_KEY}
+    depends_on:
+      - postgres
+      - wireguard
+    networks:
+      - vpn-network
+
+  wireguard:
+    image: linuxserver/wireguard:latest
+    container_name: wireguard
+    cap_add:
+      - NET_ADMIN
+      - SYS_MODULE
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Moscow
+      - SERVERURL=auto
+      - SERVERPORT=51820
+      - PEERS=1
+      - PEERDNS=auto
+      - INTERNAL_SUBNET=10.0.0.0
+    volumes:
+      - ./wg0.conf:/config/wg0.conf
+      - wireguard_config:/config
+    ports:
+      - "51820:51820/udp"
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+    restart: unless-stopped
+    networks:
+      - vpn-network
+
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: novich
+      POSTGRES_PASSWORD: novich
+      POSTGRES_DB: vpndb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - vpn-network
+
+volumes:
+  pgdata:
+  wireguard_config:
+
+networks:
+  vpn-network:
+    driver: bridge

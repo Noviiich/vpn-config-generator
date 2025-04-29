@@ -6,7 +6,7 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/slave/lib/e"
 )
 
 func (s *VPNService) getNextIP(ctx context.Context) (ip string, err error) {
