@@ -11,8 +11,15 @@ import (
 	"strconv"
 )
 
-func (s *VPNService) GetConfig(ctx context.Context, userID int) (config string, err error) {
-	baseURL := "http://62.113.36.44:8080/config"
+func (s *VPNService) GetConfig(ctx context.Context, userID int, serverID int) (config string, err error) {
+	server, err := s.repo.GetServer(ctx, serverID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get server: %v", err)
+	}
+	if server == nil {
+		return "", fmt.Errorf("server with ID %d not found", serverID)
+	}
+	baseURL := fmt.Sprintf("http://%s:%d/config", server.IPAddress, server.Port)
 	params := url.Values{}
 	params.Add("user_id", strconv.Itoa(userID))
 	fullURL := fmt.Sprintf("%s?%s", baseURL, params.Encode())

@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
 	"github.com/Noviiich/vpn-config-generator/internal/master/storage"
+	"github.com/Noviiich/vpn-config-generator/internal/master/lib/e"
 )
 
 func (s *VPNService) GetUser(ctx context.Context, chatID int, username string) (user *storage.User, err error) {

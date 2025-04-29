@@ -48,7 +48,7 @@ func Load() *Config {
 		TgBotToken: tgBotToken,
 		TgAdminID:  adminID,
 		Database: Database{
-			Host:     "localhost",
+			Host:     "postgres",
 			Port:     "5432",
 			Username: "novich",
 			Password: "novich",

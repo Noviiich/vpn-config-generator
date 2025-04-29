@@ -28,6 +28,7 @@ const (
 	btnHome      = "🏠 Главная"
 	btnTariffs   = "💎 Тарифы"
 	btnContact   = "📞 Связаться с админом"
+	btnServers   = "🌎 Серверы"
 )
 
 // Page content

@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
 	"github.com/Noviiich/vpn-config-generator/internal/master/clients/telegram"
 	"github.com/Noviiich/vpn-config-generator/internal/master/events"
+	"github.com/Noviiich/vpn-config-generator/internal/master/lib/e"
 	"github.com/Noviiich/vpn-config-generator/internal/master/service"
 )
 
@@ -147,6 +147,25 @@ func (p *Processor) processCallbackQuery(ctx context.Context, event events.Event
 		default:
 			return errors.New("unknown protocol")
 		}
+
+	case "server":
+		serverID, err := strconv.Atoi(value)
+		if err != nil {
+			return e.Wrap("invalid server ID in callback data", err)
+		}
+		configText, err := p.service.GetConfig(ctx, meta.ChatID, serverID)
+		if err != nil {
+			return err
+		}
+		if err == nil && configText == "" {
+			return p.tg.SendMessage(ctx, meta.ChatID, msgNoSubscription)
+		}
+
+		if err := p.tg.SendDocument(ctx, meta.ChatID, configText, "WG_NOV.conf"); err != nil {
+			return p.tg.SendMessage(ctx, meta.ChatID, msgErrorSendDocument)
+		}
+
+		return nil
 
 	case "tariff":
 		var tariffName, tariffPrice string

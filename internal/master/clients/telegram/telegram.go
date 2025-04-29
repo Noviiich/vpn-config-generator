@@ -13,7 +13,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/master/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/master/storage"
 )
 
 type Client struct {
@@ -360,6 +361,45 @@ func (c *Client) SendMessageWithProtocolButtons(ctx context.Context, chatID int,
 	_, err = c.doRequest(ctx, sendMessageMethod, q)
 	if err != nil {
 		return e.Wrap("can't send message with protocol buttons", err)
+	}
+
+	return nil
+}
+
+func (c *Client) SendMessageWithServerButtons(ctx context.Context, chatID int, text string, servers []storage.Server) error {
+	// Формируем кнопки для каждого сервера
+	var buttons [][]map[string]interface{}
+	for _, server := range servers {
+		button := []map[string]interface{}{
+			{
+				"text":          server.Name,
+				"callback_data": fmt.Sprintf("server_%d", server.ID),
+			},
+		}
+		buttons = append(buttons, button)
+	}
+
+	// Создаем клавиатуру
+	keyboard := map[string]interface{}{
+		"inline_keyboard": buttons,
+	}
+
+	// Сериализуем клавиатуру в JSON
+	keyboardJSON, err := json.Marshal(keyboard)
+	if err != nil {
+		return e.Wrap("can't marshal keyboard", err)
+	}
+
+	// Формируем параметры запроса
+	q := url.Values{}
+	q.Add("chat_id", strconv.Itoa(chatID))
+	q.Add("text", text)
+	q.Add("reply_markup", string(keyboardJSON))
+
+	// Отправляем запрос
+	_, err = c.doRequest(ctx, sendMessageMethod, q)
+	if err != nil {
+		return e.Wrap("can't send message with server buttons", err)
 	}
 
 	return nil

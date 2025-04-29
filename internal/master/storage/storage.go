@@ -12,6 +12,11 @@ type Storage interface {
 	DeleteUser(ctx context.Context, telegramID int) error
 	IsExistsUser(ctx context.Context, telegramID int) (bool, error)
 	GetUsers(ctx context.Context) ([]User, error)
+
+	GetServers(ctx context.Context) ([]Server, error)
+	AddServer(ctx context.Context, server *Server) error
+	DeleteServer(ctx context.Context, serverID int) error
+	GetServer(ctx context.Context, serverID int) (*Server, error)
 }
 
 type User struct {
@@ -19,4 +24,13 @@ type User struct {
 	Username           string    `db:"username" json:"username"`
 	SubscriptionActive bool      `db:"subscription_active" json:"subscription_active"`
 	SubscriptionExpiry time.Time `db:"subscription_expiry" json:"subscription_expiry"`
+}
+
+type Server struct {
+	ID          int    `db:"id" json:"id"`
+	Name        string `db:"name" json:"name"`
+	CountryFlag string `db:"country_flag" json:"country_flag"`
+	IPAddress   string `db:"ip_address" json:"ip_address"`
+	Port        int    `db:"port" json:"port"`
+	Protocol    string `db:"protocol" json:"protocol"`
 }

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/master/lib/e"
 )
 
 func (s *VPNService) StatusSubscribtion(ctx context.Context, username string, chatID int) (st string, err error) {

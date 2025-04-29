@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  postgres_master:
+  postgres:
     image: postgres:16
     restart: always
     environment:
@@ -10,20 +10,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - pgdata_master:/var/lib/postgresql/data
-
-  postgres_slave:
-    image: postgres:16
-    restart: always
-    environment:
-      POSTGRES_USER: novich   
-      POSTGRES_PASSWORD: novich 
-      POSTGRES_DB: slavedb     
-    ports:
-      - "5433:5432"
-    volumes:
-      - pgdata_slave:/var/lib/postgresql/data
-
+      - pgdata:/var/lib/postgresql/data
 volumes:
-  pgdata_master:
-  pgdata_slave:
+  pgdata:

@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/Noviiich/vpn-config-generator/internal/config"
 	tgClient "github.com/Noviiich/vpn-config-generator/internal/master/clients/telegram"
+	"github.com/Noviiich/vpn-config-generator/internal/master/config"
 	event_consumer "github.com/Noviiich/vpn-config-generator/internal/master/consumer/event-consumer"
 	subscription_consumer "github.com/Noviiich/vpn-config-generator/internal/master/consumer/subscription-consumer"
 	"github.com/Noviiich/vpn-config-generator/internal/master/events/telegram"

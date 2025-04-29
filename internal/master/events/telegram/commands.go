@@ -7,10 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Noviiich/vpn-config-generator/internal/lib/e"
+	"github.com/Noviiich/vpn-config-generator/internal/master/lib/e"
 )
 
 const (
+	ServersCmd   = btnServers
 	HomeCmd      = btnHome
 	ProtocolsCmd = btnProtocols
 	TariffsCmd   = btnTariffs
@@ -55,6 +56,8 @@ func (p *Processor) doCmd(ctx context.Context, text string, chatID int, username
 		return p.sendHelp(ctx, chatID)
 	case StartCmd:
 		return p.sendHello(ctx, chatID, username)
+	case ServersCmd:
+		return p.showServers(ctx, chatID)
 	default:
 		return p.tg.SendMessage(ctx, chatID, msgUnknownCommand)
 	}
@@ -69,7 +72,7 @@ func (p *Processor) wireguard(ctx context.Context, chatID int) (err error) {
 	}
 
 	// Then get and send the configuration
-	configText, err := p.service.GetConfig(ctx, chatID)
+	configText, err := p.service.GetConfig(ctx, chatID, 2)
 	if err != nil {
 		return err
 	}
@@ -138,7 +141,7 @@ func (p *Processor) getUsers(ctx context.Context, chatID int) error {
 }
 
 func (p *Processor) showHome(ctx context.Context, chatID int) error {
-	buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}}
+	buttons := [][]string{{btnProfile, btnProtocols}, {btnTariffs, btnContact}, {btnServers}}
 	return p.tg.SendMessageWithKeyboard(ctx, chatID, msgHome, buttons)
 }
 
@@ -172,4 +175,13 @@ func (p *Processor) showTariffs(ctx context.Context, chatID int) error {
 func (p *Processor) showContact(ctx context.Context, chatID int) error {
 	buttons := [][]string{{btnHome}}
 	return p.tg.SendMessageWithKeyboard(ctx, chatID, msgContact, buttons)
+}
+
+func (p *Processor) showServers(ctx context.Context, chatID int) error {
+	servers, err := p.service.GetServers(ctx)
+	if err != nil {
+		return p.tg.SendMessage(ctx, chatID, err.Error())
+	}
+
+	return p.tg.SendMessageWithServerButtons(ctx, chatID, "Все серверы", servers)
 }
